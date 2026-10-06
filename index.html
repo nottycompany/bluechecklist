@@ -1,0 +1,793 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Opening Checklist</title>
+<style>
+*{box-sizing:border-box}
+:root{
+ --bg:#090b0e;--panel:#13161b;--panel2:#181c22;--line:#2b3038;
+ --text:#f5f6f8;--muted:#a9b0ba;--gold:#c6a15b;--gold2:#e2bf75;
+ --green:#48c98d;--amber:#e3ad4e;--red:#ff6868;--blue:#75aaff;
+}
+html,body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,"Noto Sans Thai",sans-serif}
+button,input{font:inherit}
+button{cursor:pointer}
+header{position:sticky;top:0;z-index:20;background:#080a0d;border-bottom:1px solid #242932;padding:10px 12px}
+.headrow{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.brand{font-weight:900;font-size:18px;letter-spacing:.2px}.brand span{color:var(--gold2)}
+.nav{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:9px}
+.nav button{border:1px solid #30353d;background:#15191f;color:#cdd2d9;border-radius:9px;padding:9px 5px;font-size:12px;font-weight:800}
+.nav button.active{background:#3a3020;color:#f1d18f;border-color:#8d6d34}
+main{max-width:1050px;margin:auto;padding:12px}
+.page{display:none}.page.active{display:block}
+.page-title{font-size:23px;font-weight:900;margin:4px 0 4px}
+.sub{color:var(--muted);font-size:12px;margin-bottom:13px}
+.hero{background:linear-gradient(135deg,#17130c,#191c22);border:1px solid #4a3a21;border-radius:16px;padding:17px;margin-bottom:12px}
+.hero-line{display:flex;align-items:center;justify-content:space-between;gap:15px}
+.hero-title{font-size:27px;font-weight:900}.hero-sub{color:#b9bdc5;font-size:12px;margin-top:4px}
+.badge{display:inline-flex;align-items:center;justify-content:center;padding:5px 8px;border-radius:999px;font-size:10px;font-weight:900}
+.ready{background:#163326;color:#73d7a8}.notready{background:#3a2119;color:#f0b66b}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-bottom:12px}
+.kpi{background:var(--panel);border:1px solid var(--line);border-radius:13px;padding:12px}
+.kpi .n{font-size:25px;font-weight:900}.kpi .t{font-size:11px;color:var(--muted);margin-top:2px}
+.green{color:var(--green)}.amber{color:var(--amber)}.red{color:var(--red)}.gold{color:var(--gold2)}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px}
+.panel h2{font-size:16px;margin:0 0 12px}
+.progress{height:9px;background:#292e35;border-radius:99px;overflow:hidden}.fill{height:100%;background:var(--gold);border-radius:99px}
+.cat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:9px}
+.cat-card{background:var(--panel);border:1px solid var(--line);border-radius:13px;padding:13px}
+.cat-top{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}
+.cat-name{font-size:14px;font-weight:900;line-height:1.35}.cat-num{color:#7e8792;font-size:10px}
+.cat-meta{color:var(--muted);font-size:11px;margin:7px 0}
+.small-btn{border:1px solid #3a4049;background:#171b20;color:#eee;border-radius:8px;padding:7px 9px;font-size:11px;font-weight:800}
+.primary{border:0;background:var(--gold);color:#111;border-radius:9px;padding:10px 13px;font-weight:900}
+.danger-btn{border:1px solid #69352e;background:#2b1715;color:#ffb0a8;border-radius:9px;padding:9px 11px;font-weight:800}
+.searchbar{display:flex;gap:7px;margin-bottom:10px}.searchbar input,.searchbar select{
+width:100%;background:#0f1216;color:#f5f6f8;border:1px solid #373d46;border-radius:9px;padding:10px;outline:none}
+.item{background:var(--panel2);border:1px solid var(--line);border-radius:13px;padding:13px;margin-bottom:8px}
+.item-title{font-size:14px;font-weight:850;line-height:1.4}
+.item-note{color:var(--muted);font-size:11px;margin-top:4px;white-space:pre-wrap}
+.checks{display:flex;gap:8px;margin-top:11px}
+.check-label{flex:1;display:flex;align-items:center;justify-content:center;gap:7px;border:1px solid #3b414a;background:#15191f;border-radius:9px;padding:9px;font-size:12px;font-weight:850}
+.check-label input{width:21px;height:21px;accent-color:var(--gold2)}
+.note-row{display:flex;gap:7px;margin-top:8px}.note-row input{flex:1;background:#0f1216;color:#fff;border:1px solid #373d46;border-radius:9px;padding:9px}
+.back{margin-bottom:10px}
+.pending-group{background:var(--panel);border:1px solid var(--line);border-radius:14px;margin-bottom:10px;overflow:hidden}
+.pending-head{padding:12px 14px;background:#191d23;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:8px;align-items:center}
+.pending-head b{font-size:14px}.pending-item{padding:12px 13px;border-bottom:1px solid #292e35;display:flex;gap:9px;align-items:flex-start}
+.pending-item:last-child{border-bottom:0}.dot{width:9px;height:9px;background:var(--amber);border-radius:50%;margin-top:6px;flex:none}
+.pending-main{flex:1}.pending-title{font-size:13px;font-weight:850}.comment{font-size:11px;color:#d4a95f;margin-top:5px;white-space:pre-wrap}
+.fixbtn{border:0;background:var(--green);color:#0b1711;border-radius:8px;padding:8px 9px;font-size:11px;font-weight:900;white-space:nowrap}
+.empty{text-align:center;padding:28px 12px;color:var(--muted)}
+.summary-row{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}
+.summary-chip{background:#1b2026;border:1px solid #343a43;border-radius:999px;padding:6px 9px;font-size:11px}
+.issue-box{background:#201a10;border:1px solid #5b4829;border-radius:10px;padding:10px;color:#e7c477;font-size:12px;margin-bottom:8px}
+@media(max-width:700px){
+ .headrow{min-height:35px}.brand{font-size:16px}
+ main{padding:10px}.kpis{grid-template-columns:1fr 1fr}.kpi .n{font-size:22px}
+ .cat-grid{grid-template-columns:1fr 1fr;gap:7px}
+ .cat-card{padding:10px;border-radius:11px}
+ .cat-name{font-size:12px;line-height:1.3}
+ .cat-num{font-size:9px}
+ .cat-meta{font-size:9px;line-height:1.45;margin:5px 0}
+ .cat-card .badge{font-size:9px;padding:4px 6px}
+ .cat-card .progress{height:7px}
+ .cat-card .primary{font-size:11px;padding:9px 5px;margin-top:7px!important}
+ .hero-title{font-size:24px}
+ .checks{gap:6px}.check-label{padding:10px 6px}
+ .note-row{display:block}.note-row input{width:100%;min-height:40px}.note-row button{width:100%;margin-top:6px}
+}
+</style>
+
+<style>
+/* Dashboard: ความพร้อมแต่ละหมวด = 2 บล็อกต่อแถว */
+#dashCats{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:9px;
+}
+#dashCats .cat-card{
+  margin-bottom:0 !important;
+  min-width:0;
+}
+@media(max-width:700px){
+  #dashCats{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:7px;
+  }
+  #dashCats .cat-card{
+    padding:10px;
+    border-radius:11px;
+  }
+  #dashCats .cat-name{
+    font-size:12px;
+    line-height:1.3;
+  }
+  #dashCats .cat-num{
+    font-size:9px;
+  }
+  #dashCats .cat-meta{
+    font-size:9px;
+    line-height:1.45;
+    margin:5px 0;
+  }
+  #dashCats .badge{
+    font-size:9px;
+    padding:4px 6px;
+  }
+  #dashCats .progress{
+    height:7px;
+  }
+}
+</style>
+
+<style>
+#pendingCats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+@media(max-width:700px){
+ #pendingCats{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+ #pendingCats .cat-card{padding:10px}
+ #pendingCats .cat-name{font-size:12px}
+ #pendingCats .cat-meta{font-size:9px;line-height:1.45}
+ #pendingCats .primary{font-size:10px;padding:9px 4px}
+}
+</style>
+
+<style>
+/* Dashboard category cards: row 1 = name, row 2 = progress + percent */
+#dashCats .dashboard-simple-card{
+  padding:13px 14px;
+  min-height:76px;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+}
+#dashCats .dashboard-cat-name{
+  font-size:14px;
+  font-weight:900;
+  line-height:1.3;
+  color:var(--text);
+  margin-bottom:10px;
+}
+#dashCats .dashboard-progress-row{
+  display:flex;
+  align-items:center;
+  gap:9px;
+}
+#dashCats .dashboard-progress-row .progress{
+  flex:1;
+  height:8px;
+}
+#dashCats .dashboard-pct{
+  min-width:35px;
+  text-align:right;
+  font-size:12px;
+  font-weight:900;
+  color:var(--gold2);
+}
+@media(max-width:700px){
+  #dashCats .dashboard-simple-card{
+    padding:10px;
+    min-height:68px;
+  }
+  #dashCats .dashboard-cat-name{
+    font-size:12px;
+    margin-bottom:8px;
+  }
+  #dashCats .dashboard-progress-row{
+    gap:6px;
+  }
+  #dashCats .dashboard-progress-row .progress{
+    height:7px;
+  }
+  #dashCats .dashboard-pct{
+    min-width:30px;
+    font-size:10px;
+  }
+}
+</style>
+
+<style>
+/* ===== CAVE BLUE & CHAMPAGNE GOLD — shop identity ===== */
+:root{
+ --bg:#070B18;
+ --panel:#0E1426;
+ --panel2:#121A30;
+ --line:#26324F;
+ --text:#F7F5F0;
+ --muted:#A9B0C2;
+
+ --gold:#D4AA55;
+ --gold2:#F0CD7A;
+ --gold-dark:#8D6A2F;
+
+ --blue:#1B3FB8;
+ --blue2:#244FFF;
+ --blue-glow:#315CFF;
+
+ --green:#48C994;
+ --amber:#E7B34F;
+ --red:#F06C68;
+}
+html,body{background:var(--bg)!important;color:var(--text)!important}
+body{
+ background:
+   radial-gradient(circle at 50% -10%,rgba(36,79,255,.13),transparent 35%),
+   var(--bg)!important;
+}
+header{
+ background:rgba(5,8,19,.97)!important;
+ border-bottom:1px solid rgba(212,170,85,.35)!important;
+ box-shadow:0 5px 25px rgba(0,0,0,.35);
+}
+.brand{color:#fff!important}
+.brand span{
+ color:var(--gold2)!important;
+ text-shadow:0 0 16px rgba(240,205,122,.18);
+}
+.nav button{
+ background:#0E1425!important;
+ color:#D6D9E1!important;
+ border-color:#2A3552!important;
+}
+.nav button.active{
+ background:linear-gradient(135deg,#2B2415,#403018)!important;
+ color:#F3D58D!important;
+ border-color:var(--gold)!important;
+ box-shadow:0 0 16px rgba(212,170,85,.12);
+}
+main{background:transparent!important}
+
+.hero{
+ background:
+   linear-gradient(135deg,rgba(36,79,255,.14),rgba(212,170,85,.07)),
+   #0D1427!important;
+ border-color:rgba(212,170,85,.42)!important;
+}
+.panel,.kpi,.cat-card,.item,.pending-group{
+ background:linear-gradient(145deg,#10172B,#0D1323)!important;
+ border-color:#273351!important;
+ box-shadow:0 7px 22px rgba(0,0,0,.24);
+}
+.cat-card:hover,.item:hover{
+ border-color:rgba(212,170,85,.5)!important;
+}
+.cat-name,.item-title,.page-title,h1,h2,h3{
+ color:#FAF9F5!important;
+}
+.sub,.cat-meta,.item-note,.kpi .t,.muted{
+ color:#AEB5C6!important;
+}
+
+.progress{
+ background:#202A42!important;
+ border:1px solid #293653;
+}
+.fill{
+ background:linear-gradient(90deg,#1E45D4,#315CFF)!important;
+ box-shadow:0 0 9px rgba(49,92,255,.28);
+}
+.dashboard-pct,.gold{color:var(--gold2)!important}
+
+.primary{
+ background:linear-gradient(135deg,#D2A84F,#E7C36F)!important;
+ color:#0B0E17!important;
+ box-shadow:0 5px 16px rgba(212,170,85,.18);
+}
+.small-btn,.ghost,.check-label{
+ background:#11192D!important;
+ color:#F1F2F5!important;
+ border-color:#34415F!important;
+}
+.small-btn:hover,.ghost:hover,.check-label:hover{
+ border-color:var(--gold)!important;
+}
+input,select{
+ background:#0A1020!important;
+ color:#F7F5F0!important;
+ border-color:#34415F!important;
+}
+input:focus,select:focus{
+ border-color:var(--gold)!important;
+ box-shadow:0 0 0 2px rgba(212,170,85,.12);
+}
+.check-label input{accent-color:var(--gold2)}
+
+.badge.ready{
+ background:#123A2C!important;color:#72DDB0!important;
+}
+.badge.notready{
+ background:#3A2915!important;color:#F0C66E!important;
+}
+.fixbtn{
+ background:linear-gradient(135deg,#43C88D,#55D8A0)!important;
+ color:#07140E!important;
+}
+.danger-btn{
+ background:#281617!important;
+ color:#F39B95!important;
+ border-color:#713B38!important;
+}
+.issue-box{
+ background:#211A0D!important;
+ border-color:#6A5228!important;
+ color:#E9C66E!important;
+}
+.pending-head{
+ background:#151D32!important;
+ border-color:#293653!important;
+}
+.dot{background:var(--gold2)!important}
+.summary-chip{
+ background:#121B31!important;
+ border-color:#354260!important;
+}
+.kpi .n.gold{color:var(--gold2)!important}
+.kpi .n.green{color:#50D59B!important}
+.kpi .n.amber{color:#F0BD58!important}
+.kpi .n.red{color:#FF7772!important}
+
+/* Subtle blue ambient accents, like the real interior lighting */
+#dashCats .dashboard-simple-card,
+#checkCats .cat-card,
+#pendingCats .cat-card{
+ position:relative;
+ overflow:hidden;
+}
+#dashCats .dashboard-simple-card::before,
+#checkCats .cat-card::before,
+#pendingCats .cat-card::before{
+ content:"";
+ position:absolute;
+ left:0;top:0;bottom:0;width:2px;
+ background:linear-gradient(#244FFF,#D4AA55);
+ opacity:.72;
+}
+@media(max-width:700px){
+ .brand{letter-spacing:.2px}
+}
+</style>
+
+<style>
+.lang-switch{display:flex;gap:5px;align-items:center;margin-left:auto}
+.lang-switch button{
+ width:38px;height:34px;border-radius:9px;border:1px solid #34415F;
+ background:#0E1425;color:#fff;font-size:20px;padding:0;
+}
+.lang-switch button.active{
+ border-color:var(--gold)!important;
+ background:#332714!important;
+ box-shadow:0 0 12px rgba(212,170,85,.16);
+}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script><style>.excel-btn{border:1px solid #4E9A78;background:#123A2C;color:#7BE0B4;border-radius:10px;padding:8px 12px;font-weight:900;cursor:pointer}</style></head>
+<body>
+<header>
+ <div class="headrow">
+  <div class="brand">OPENING <span>CHECKLIST</span></div>
+  <div class="lang-switch" aria-label="Language">
+  <button id="langLO" onclick="setLanguage('lo')" title="ພາສາລາວ">🇱🇦</button>
+  <button id="langTH" onclick="setLanguage('th')" title="ภาษาไทย">🇹🇭</button>
+</div><button class="excel-btn" onclick="exportExcel()">📊 Excel</button>
+  <button class="danger-btn" onclick="resetAll()">ຣີເຊັດ</button>
+ </div>
+ <div class="nav">
+  <button id="nav1" class="active" onclick="goPage(1)">① ສະຫຼຸບ</button>
+  <button id="nav2" onclick="goPage(2)">② ເຊັກລິສ</button>
+  <button id="nav3" onclick="goPage(3)">③ ລໍຖ້າແກ້ໄຂ</button>
+ </div>
+</header>
+
+<main>
+<section id="page1" class="page active">
+ <div class="page-title">Dashboard สรุปความพร้อม</div>
+ <div class="sub">ภาพรวมก่อนเปิดร้าน • อาหาร • Bar • Live Music • DJ</div>
+ <div class="hero">
+  <div class="hero-line">
+   <div><div class="hero-title" id="readyPercent">0%</div><div class="hero-sub" id="readyText">กำลังตรวจสอบ</div></div>
+   <div id="readyBadge" class="badge notready">ยังไม่พร้อม</div>
+  </div>
+  <div class="progress" style="margin-top:14px"><div id="overallFill" class="fill" style="width:0%"></div></div>
+ </div>
+ <div class="kpis">
+  <div class="kpi"><div class="n green" id="kPass">0</div><div class="t">ผ่าน</div></div>
+  <div class="kpi"><div class="n amber" id="kPending">0</div><div class="t">รอแก้ไข</div></div>
+  <div class="kpi"><div class="n gold" id="kFixed">0</div><div class="t">แก้ไขแล้ว</div></div>
+  <div class="kpi"><div class="n" id="kFull">0/20</div><div class="t">หมวดครบ</div></div>
+ </div>
+ <div class="panel"><h2>ความพร้อมแต่ละหมวด</h2><div id="dashCats"></div></div>
+
+</section>
+
+<section id="page2" class="page">
+ <div id="checkHome">
+  <div class="page-title">Checklist</div>
+  <div class="sub">เลือกหมวดที่ต้องการตรวจ แล้วกดเข้าไปทำงาน</div>
+  <div class="cat-grid" id="checkCats"></div>
+ </div>
+ <div id="checkDetail" style="display:none">
+  <button class="small-btn back" onclick="closeChecklist()">← กลับรายการหมวด</button>
+  <div class="page-title" id="detailTitle"></div>
+  <div class="sub" id="detailSub"></div>
+  <div class="panel">
+   <div class="searchbar">
+    <input id="itemSearch" placeholder="ค้นหารายการ..." oninput="renderDetail()">
+    <select id="itemFilter" onchange="renderDetail()">
+      <option value="all">ทั้งหมด</option><option value="pending">รอแก้ไข</option><option value="pass">ผ่าน</option><option value="fixed">แก้ไขแล้ว</option>
+    </select>
+   </div>
+   <div id="detailItems"></div>
+  </div>
+ </div>
+</section>
+
+<section id="page3" class="page">
+ <div id="pendingHome">
+  <div class="page-title">รายการรอแก้ไข</div>
+  <div class="sub">เลือกหมวดหมู่ก่อน แล้วดูเฉพาะรายการที่ต้องแก้ไข</div>
+  <div class="kpis">
+   <div class="kpi"><div class="n amber" id="pCount">0</div><div class="t">รอแก้ไขทั้งหมด</div></div>
+   <div class="kpi"><div class="n gold" id="pCats">0</div><div class="t">หมวดที่มีงานค้าง</div></div>
+   <div class="kpi"><div class="n green" id="pFixed">0</div><div class="t">แก้ไขแล้ว</div></div>
+   <div class="kpi"><div class="n" id="pReady">0%</div><div class="t">ความพร้อมรวม</div></div>
+  </div>
+  <div class="panel"><h2>เลือกหมวดที่ต้องแก้ไข</h2><div id="pendingCats" class="cat-grid"></div></div>
+ </div>
+ <div id="pendingDetail" style="display:none">
+  <button class="small-btn back" onclick="closePendingDetail()">← กลับรายการหมวด</button>
+  <div class="page-title" id="pendingDetailTitle"></div>
+  <div class="sub" id="pendingDetailSub"></div>
+  <div id="pendingItems"></div>
+ </div>
+</section>
+</main>
+
+<script>
+const seed = [{"name":"อาคารและพื้นที่ร้าน","total":20,"items":[{"text":"พื้นหน้าร้านสะอาด","status":"pending","owner":"","note":"","th":"พื้นหน้าร้านสะอาด"},{"text":"ทางเข้าร้านไม่มีสิ่งกีดขวาง","status":"pending","owner":"","note":"","th":"ทางเข้าร้านไม่มีสิ่งกีดขวาง"},{"text":"ประตูทางเข้าเปิด–ปิดปกติ","status":"pending","owner":"","note":"","th":"ประตูทางเข้าเปิด–ปิดปกติ"},{"text":"มือจับประตูสะอาด","status":"pending","owner":"","note":"","th":"มือจับประตูสะอาด"},{"text":"กระจกหน้าร้านสะอาด","status":"pending","owner":"","note":"","th":"กระจกหน้าร้านสะอาด"},{"text":"ป้ายร้านสะอาดและเรียบร้อย","status":"pending","owner":"","note":"","th":"ป้ายร้านสะอาดและเรียบร้อย"},{"text":"ไฟหน้าร้านทำงานครบ","status":"pending","owner":"","note":"","th":"ไฟหน้าร้านทำงานครบ"},{"text":"พื้นที่จอดรถเรียบร้อย","status":"pending","owner":"","note":"","th":"พื้นที่จอดรถเรียบร้อย"},{"text":"พื้นภายในร้านสะอาด","status":"pending","owner":"","note":"","th":"พื้นภายในร้านสะอาด"},{"text":"ทางเดินภายในร้านโล่ง","status":"pending","owner":"","note":"","th":"ทางเดินภายในร้านโล่ง"},{"text":"ผนังและเสาสะอาด","status":"pending","owner":"","note":"","th":"ผนังและเสาสะอาด"},{"text":"ไม่มีของวางรกสายตา","status":"pending","owner":"","note":"","th":"ไม่มีของวางรกสายตา"},{"text":"แอร์ทำงานปกติ","status":"pending","owner":"","note":"","th":"แอร์ทำงานปกติ"},{"text":"อุณหภูมิภายในร้านเหมาะสม","status":"pending","owner":"","note":"","th":"อุณหภูมิภายในร้านเหมาะสม"},{"text":"ระบบระบายอากาศทำงาน","status":"pending","owner":"","note":"","th":"ระบบระบายอากาศทำงาน"},{"text":"ไม่มีกลิ่นผิดปกติ","status":"pending","owner":"","note":"","th":"ไม่มีกลิ่นผิดปกติ"},{"text":"ไม่มีแมลงหรือสัตว์รบกวน","status":"pending","owner":"","note":"","th":"ไม่มีแมลงหรือสัตว์รบกวน"},{"text":"ประตูทางออกฉุกเฉินใช้งานได้","status":"pending","owner":"","note":"","th":"ประตูทางออกฉุกเฉินใช้งานได้"},{"text":"พื้นที่บริการพร้อมใช้งาน","status":"pending","owner":"","note":"","th":"พื้นที่บริการพร้อมใช้งาน"},{"text":"ไม่มีอุปกรณ์ชำรุดที่กระทบลูกค้า","status":"pending","owner":"","note":"","th":"ไม่มีอุปกรณ์ชำรุดที่กระทบลูกค้า"}],"th":"อาคารและพื้นที่ร้าน"},{"name":"ภาพลักษณ์และความสะอาด","total":19,"items":[{"text":"โต๊ะสะอาดไม่มีคราบ","status":"pending","owner":"","note":"","th":"โต๊ะสะอาดไม่มีคราบ"},{"text":"เก้าอี้สะอาด","status":"pending","owner":"","note":"","th":"เก้าอี้สะอาด"},{"text":"เก้าอี้ไม่มีความเสียหาย","status":"pending","owner":"","note":"","th":"เก้าอี้ไม่มีความเสียหาย"},{"text":"กระจกและของตกแต่งสะอาด","status":"pending","owner":"","note":"","th":"กระจกและของตกแต่งสะอาด"},{"text":"ของตกแต่งอยู่ในตำแหน่ง","status":"pending","owner":"","note":"","th":"ของตกแต่งอยู่ในตำแหน่ง"},{"text":"ไฟบรรยากาศเปิดครบ","status":"pending","owner":"","note":"","th":"ไฟบรรยากาศเปิดครบ"},{"text":"ไฟโต๊ะทำงาน","status":"pending","owner":"","note":"","th":"ไฟโต๊ะทำงาน"},{"text":"ไฟบาร์ทำงาน","status":"pending","owner":"","note":"","th":"ไฟบาร์ทำงาน"},{"text":"ไฟเวทีทำงาน","status":"pending","owner":"","note":"","th":"ไฟเวทีทำงาน"},{"text":"ไม่มีหลอดไฟเสีย","status":"pending","owner":"","note":"","th":"ไม่มีหลอดไฟเสีย"},{"text":"ความสว่างเหมาะสมกับช่วงเวลา","status":"pending","owner":"","note":"","th":"ความสว่างเหมาะสมกับช่วงเวลา"},{"text":"เพลง Background พร้อม","status":"pending","owner":"","note":"","th":"เพลง Background พร้อม"},{"text":"ระดับเสียง Background เหมาะสม","status":"pending","owner":"","note":"","th":"ระดับเสียง Background เหมาะสม"},{"text":"กลิ่นภายในร้านดี","status":"pending","owner":"","note":"","th":"กลิ่นภายในร้านดี"},{"text":"ไม่มีคราบหรือฝุ่นตามจุดสัมผัส","status":"pending","owner":"","note":"","th":"ไม่มีคราบหรือฝุ่นตามจุดสัมผัส"},{"text":"ถังขยะสะอาดและมีถุง","status":"pending","owner":"","note":"","th":"ถังขยะสะอาดและมีถุง"},{"text":"จุดบริการลูกค้าเรียบร้อย","status":"pending","owner":"","note":"","th":"จุดบริการลูกค้าเรียบร้อย"},{"text":"เมนูสะอาด","status":"pending","owner":"","note":"","th":"เมนูสะอาด"},{"text":"QR Code บนโต๊ะพร้อมใช้งาน","status":"pending","owner":"","note":"","th":"คิวอาร์โค้ด บนโต๊ะพร้อมใช้งาน"}],"th":"ภาพลักษณ์และความสะอาด"},{"name":"โต๊ะและพื้นที่บริการ","total":20,"items":[{"text":"ตรวจโต๊ะ T01","status":"pending","owner":"","note":"","th":"ตรวจโต๊ะ T01"},{"text":"ตรวจโต๊ะ T02","status":"pending","owner":"","note":"","th":"ตรวจโต๊ะ T02"},{"text":"ตรวจโต๊ะ T03","status":"pending","owner":"","note":"","th":"ตรวจโต๊ะ T03"},{"text":"ตรวจโต๊ะ T04","status":"pending","owner":"","note":"","th":"ตรวจโต๊ะ T04"},{"text":"ตรวจโต๊ะ T05","status":"pending","owner":"","note":"","th":"ตรวจโต๊ะ T05"},{"text":"ตรวจโต๊ะ T06","status":"pending","owner":"","note":"","th":"ตรวจโต๊ะ T06"},{"text":"ตรวจโต๊ะ T07","status":"pending","owner":"","note":"","th":"ตรวจโต๊ะ T07"},{"text":"ตรวจโต๊ะ T08","status":"pending","owner":"","note":"","th":"ตรวจโต๊ะ T08"},{"text":"ตรวจโต๊ะ T09","status":"pending","owner":"","note":"","th":"ตรวจโต๊ะ T09"},{"text":"ตรวจโต๊ะ T10","status":"pending","owner":"","note":"","th":"ตรวจโต๊ะ T10"},{"text":"Menu ครบทุกโต๊ะ","status":"pending","owner":"","note":"","th":"เมนู ครบทุกโต๊ะ"},{"text":"QR Code ครบทุกโต๊ะ","status":"pending","owner":"","note":"","th":"คิวอาร์โค้ด ครบทุกโต๊ะ"},{"text":"แก้วน้ำพร้อม","status":"pending","owner":"","note":"","th":"แก้วน้ำพร้อม"},{"text":"ช้อนพร้อม","status":"pending","owner":"","note":"","th":"ช้อนพร้อม"},{"text":"ส้อมพร้อม","status":"pending","owner":"","note":"","th":"ส้อมพร้อม"},{"text":"มีดพร้อม","status":"pending","owner":"","note":"","th":"มีดพร้อม"},{"text":"จานพร้อม","status":"pending","owner":"","note":"","th":"จานพร้อม"},{"text":"ทิชชู่พร้อม","status":"pending","owner":"","note":"","th":"ทิชชู่พร้อม"},{"text":"อุปกรณ์บนโต๊ะสะอาด","status":"pending","owner":"","note":"","th":"อุปกรณ์บนโต๊ะสะอาด"},{"text":"โต๊ะที่จองจัดเตรียมเรียบร้อย","status":"pending","owner":"","note":"","th":"โต๊ะที่จองจัดเตรียมเรียบร้อย"}],"th":"โต๊ะและพื้นที่บริการ"},{"name":"ห้องน้ำ","total":20,"items":[{"text":"พื้นห้องน้ำสะอาด","status":"pending","owner":"","note":"","th":"พื้นห้องน้ำสะอาด"},{"text":"ผนังสะอาด","status":"pending","owner":"","note":"","th":"ผนังสะอาด"},{"text":"กระจกสะอาด","status":"pending","owner":"","note":"","th":"กระจกสะอาด"},{"text":"อ่างล้างมือสะอาด","status":"pending","owner":"","note":"","th":"อ่างล้างมือสะอาด"},{"text":"ก๊อกน้ำทำงาน","status":"pending","owner":"","note":"","th":"ก๊อกน้ำทำงาน"},{"text":"น้ำไหลปกติ","status":"pending","owner":"","note":"","th":"น้ำไหลปกติ"},{"text":"สบู่พร้อม","status":"pending","owner":"","note":"","th":"สบู่พร้อม"},{"text":"กระดาษทิชชู่พร้อม","status":"pending","owner":"","note":"","th":"กระดาษทิชชู่พร้อม"},{"text":"กระดาษเช็ดมือพร้อม","status":"pending","owner":"","note":"","th":"กระดาษเช็ดมือพร้อม"},{"text":"เครื่องเป่ามือทำงาน","status":"pending","owner":"","note":"","th":"เครื่องเป่ามือทำงาน"},{"text":"ถังขยะพร้อมถุง","status":"pending","owner":"","note":"","th":"ถังขยะพร้อมถุง"},{"text":"โถสุขภัณฑ์สะอาด","status":"pending","owner":"","note":"","th":"โถสุขภัณฑ์สะอาด"},{"text":"ระบบ Flush ทำงาน","status":"pending","owner":"","note":"","th":"ระบบ Flush ทำงาน"},{"text":"ไม่มีน้ำรั่ว","status":"pending","owner":"","note":"","th":"ไม่มีน้ำรั่ว"},{"text":"ไม่มีกลิ่นไม่พึงประสงค์","status":"pending","owner":"","note":"","th":"ไม่มีกลิ่นไม่พึงประสงค์"},{"text":"พัดลมดูดอากาศทำงาน","status":"pending","owner":"","note":"","th":"พัดลมดูดอากาศทำงาน"},{"text":"ไฟทำงาน","status":"pending","owner":"","note":"","th":"ไฟทำงาน"},{"text":"ประตูและกลอนใช้งานได้","status":"pending","owner":"","note":"","th":"ประตูและกลอนใช้งานได้"},{"text":"ไม่มีแมลง","status":"pending","owner":"","note":"","th":"ไม่มีแมลง"},{"text":"กำหนดรอบตรวจห้องน้ำแล้ว","status":"pending","owner":"","note":"","th":"กำหนดรอบตรวจห้องน้ำแล้ว"}],"th":"ห้องน้ำ"},{"name":"ห้องครัว","total":20,"items":[{"text":"เตาแก๊สทำงาน","status":"pending","owner":"","note":"","th":"เตาแก๊สทำงาน"},{"text":"เตาไฟฟ้าทำงาน","status":"pending","owner":"","note":"","th":"เตาไฟฟ้าทำงาน"},{"text":"เตาทอดพร้อม","status":"pending","owner":"","note":"","th":"เตาทอดพร้อม"},{"text":"Grill พร้อม","status":"pending","owner":"","note":"","th":"Grill พร้อม"},{"text":"Oven พร้อม","status":"pending","owner":"","note":"","th":"Oven พร้อม"},{"text":"Microwave พร้อม","status":"pending","owner":"","note":"","th":"ไมโครโฟนrowave พร้อม"},{"text":"หม้อหุงข้าวพร้อม","status":"pending","owner":"","note":"","th":"หม้อหุงข้าวพร้อม"},{"text":"เครื่องปั่นพร้อม","status":"pending","owner":"","note":"","th":"เครื่องปั่นพร้อม"},{"text":"Hood ดูดควันทำงาน","status":"pending","owner":"","note":"","th":"เครื่องดูดควัน ดูดควันทำงาน"},{"text":"Sink สะอาด","status":"pending","owner":"","note":"","th":"Sink สะอาด"},{"text":"ก๊อกน้ำทำงาน","status":"pending","owner":"","note":"","th":"ก๊อกน้ำทำงาน"},{"text":"ตู้เย็นทำงาน","status":"pending","owner":"","note":"","th":"ตู้เย็นทำงาน"},{"text":"Freezer ทำงาน","status":"pending","owner":"","note":"","th":"Freezer ทำงาน"},{"text":"อุปกรณ์ครัวครบ","status":"pending","owner":"","note":"","th":"อุปกรณ์ครัวครบ"},{"text":"มีดคมและปลอดภัย","status":"pending","owner":"","note":"","th":"มีดคมและปลอดภัย"},{"text":"เขียงสะอาด","status":"pending","owner":"","note":"","th":"เขียงสะอาด"},{"text":"โต๊ะเตรียมอาหารสะอาด","status":"pending","owner":"","note":"","th":"โต๊ะเตรียมอาหารสะอาด"},{"text":"พื้นครัวสะอาด","status":"pending","owner":"","note":"","th":"พื้นครัวสะอาด"},{"text":"ถังขยะพร้อม","status":"pending","owner":"","note":"","th":"ถังขยะพร้อม"},{"text":"ตรวจ Gas / สายแก๊สเรียบร้อย","status":"pending","owner":"","note":"","th":"ตรวจ แก๊ส / สายแก๊สเรียบร้อย"}],"th":"ห้องครัว"},{"name":"วัตถุดิบ","total":20,"items":[{"text":"หมูสดพร้อมใช้งาน","status":"pending","owner":"","note":"","th":"หมูสดพร้อมใช้งาน"},{"text":"ไก่สดพร้อมใช้งาน","status":"pending","owner":"","note":"","th":"ไก่สดพร้อมใช้งาน"},{"text":"เนื้อสดพร้อมใช้งาน","status":"pending","owner":"","note":"","th":"เนื้อสดพร้อมใช้งาน"},{"text":"ปลาและอาหารทะเลพร้อม","status":"pending","owner":"","note":"","th":"ปลาและอาหารทะเลพร้อม"},{"text":"กุ้งพร้อม","status":"pending","owner":"","note":"","th":"กุ้งพร้อม"},{"text":"ปลาหมึกพร้อม","status":"pending","owner":"","note":"","th":"ปลาหมึกพร้อม"},{"text":"ผักสดพร้อม","status":"pending","owner":"","note":"","th":"ผักสดพร้อม"},{"text":"สมุนไพรพร้อม","status":"pending","owner":"","note":"","th":"สมุนไพรพร้อม"},{"text":"มะนาวพร้อม","status":"pending","owner":"","note":"","th":"มะนาวพร้อม"},{"text":"พริกพร้อม","status":"pending","owner":"","note":"","th":"พริกพร้อม"},{"text":"กระเทียมและหอมพร้อม","status":"pending","owner":"","note":"","th":"กระเทียมและหอมพร้อม"},{"text":"ข้าวพร้อม","status":"pending","owner":"","note":"","th":"ข้าวพร้อม"},{"text":"น้ำมันพร้อม","status":"pending","owner":"","note":"","th":"น้ำมันพร้อม"},{"text":"เครื่องปรุงหลักพร้อม","status":"pending","owner":"","note":"","th":"เครื่องปรุงหลักพร้อม"},{"text":"ซอสพร้อม","status":"pending","owner":"","note":"","th":"ซอสพร้อม"},{"text":"วัตถุดิบไม่หมดอายุ","status":"pending","owner":"","note":"","th":"วัตถุดิบไม่หมดอายุ"},{"text":"บรรจุภัณฑ์ไม่เสียหาย","status":"pending","owner":"","note":"","th":"บรรจุภัณฑ์ไม่เสียหาย"},{"text":"ไม่มีวัตถุดิบกลิ่นผิดปกติ","status":"pending","owner":"","note":"","th":"ไม่มีวัตถุดิบกลิ่นผิดปกติ"},{"text":"จัดเก็บตามอุณหภูมิที่เหมาะสม","status":"pending","owner":"","note":"","th":"จัดเก็บตามอุณหภูมิที่เหมาะสม"},{"text":"แยกวัตถุดิบดิบและสุกเรียบร้อย","status":"pending","owner":"","note":"","th":"แยกวัตถุดิบดิบและสุกเรียบร้อย"}],"th":"วัตถุดิบ"},{"name":"Food Preparation","total":20,"items":[{"text":"เตรียมหมูตามแผน","status":"pending","owner":"","note":"","th":"เตรียมหมูตามแผน"},{"text":"เตรียมไก่ตามแผน","status":"pending","owner":"","note":"","th":"เตรียมไก่ตามแผน"},{"text":"เตรียมเนื้อตามแผน","status":"pending","owner":"","note":"","th":"เตรียมเนื้อตามแผน"},{"text":"เตรียมปลาและอาหารทะเล","status":"pending","owner":"","note":"","th":"เตรียมปลาและอาหารทะเล"},{"text":"เตรียมกุ้ง","status":"pending","owner":"","note":"","th":"เตรียมกุ้ง"},{"text":"เตรียมปลาหมึก","status":"pending","owner":"","note":"","th":"เตรียมปลาหมึก"},{"text":"หั่นผักครบ","status":"pending","owner":"","note":"","th":"หั่นผักครบ"},{"text":"เตรียมน้ำจิ้ม","status":"pending","owner":"","note":"","th":"เตรียมน้ำจิ้ม"},{"text":"เตรียมซอส","status":"pending","owner":"","note":"","th":"เตรียมซอส"},{"text":"เตรียมเครื่องเคียง","status":"pending","owner":"","note":"","th":"เตรียมเครื่องเคียง"},{"text":"เตรียมของทอด","status":"pending","owner":"","note":"","th":"เตรียมของทอด"},{"text":"เตรียมของย่าง","status":"pending","owner":"","note":"","th":"เตรียมของย่าง"},{"text":"เตรียมของตกแต่งจาน","status":"pending","owner":"","note":"","th":"เตรียมของตกแต่งจาน"},{"text":"ตรวจ Portion","status":"pending","owner":"","note":"","th":"ตรวจ Portion"},{"text":"ตรวจรสชาติอาหารตัวอย่าง","status":"pending","owner":"","note":"","th":"ตรวจรสชาติอาหารตัวอย่าง"},{"text":"ภาชนะ Prep ติดป้าย","status":"pending","owner":"","note":"","th":"ภาชนะ การเตรียม ติดป้าย"},{"text":"บันทึกเวลาเตรียม","status":"pending","owner":"","note":"","th":"บันทึกเวลาเตรียม"},{"text":"จัดเก็บอาหาร Prep ถูกต้อง","status":"pending","owner":"","note":"","th":"จัดเก็บอาหาร การเตรียม ถูกต้อง"},{"text":"ตรวจเมนูที่ไม่พร้อมขาย","status":"pending","owner":"","note":"","th":"ตรวจเมนูที่ไม่พร้อมขาย"},{"text":"แจ้งเมนูหมดให้ Service","status":"pending","owner":"","note":"","th":"แจ้งเมนูหมดให้ บริการ"}],"th":"การเตรียมอาหาร"},{"name":"Bar / เครื่องดื่ม","total":20,"items":[{"text":"Beer พร้อมขาย","status":"pending","owner":"","note":"","th":"เบียร์ พร้อมขาย"},{"text":"Beer Lao พร้อม","status":"pending","owner":"","note":"","th":"เบียร์ลาว พร้อม"},{"text":"Heineken พร้อม","status":"pending","owner":"","note":"","th":"Heineken พร้อม"},{"text":"Beer Tower พร้อม","status":"pending","owner":"","note":"","th":"ทาวเวอร์เบียร์ พร้อม"},{"text":"Draft Beer พร้อมถ้ามี","status":"pending","owner":"","note":"","th":"เบียร์สด พร้อมถ้ามี"},{"text":"Whisky พร้อม","status":"pending","owner":"","note":"","th":"วิสกี้ พร้อม"},{"text":"Vodka พร้อม","status":"pending","owner":"","note":"","th":"วอดก้า พร้อม"},{"text":"Gin พร้อม","status":"pending","owner":"","note":"","th":"จิน พร้อม"},{"text":"Rum พร้อม","status":"pending","owner":"","note":"","th":"รัม พร้อม"},{"text":"Tequila พร้อม","status":"pending","owner":"","note":"","th":"เตกีลา พร้อม"},{"text":"Brandy พร้อม","status":"pending","owner":"","note":"","th":"บรั่นดี พร้อม"},{"text":"Soda พร้อม","status":"pending","owner":"","note":"","th":"โซดา พร้อม"},{"text":"Cola พร้อม","status":"pending","owner":"","note":"","th":"โคล่า พร้อม"},{"text":"Tonic พร้อม","status":"pending","owner":"","note":"","th":"โทนิก พร้อม"},{"text":"น้ำเปล่าพร้อม","status":"pending","owner":"","note":"","th":"น้ำเปล่าพร้อม"},{"text":"Juice พร้อม","status":"pending","owner":"","note":"","th":"น้ำผลไม้ พร้อม"},{"text":"น้ำแข็งเพียงพอ","status":"pending","owner":"","note":"","th":"น้ำแข็งเพียงพอ"},{"text":"แก้วเบียร์สะอาด","status":"pending","owner":"","note":"","th":"แก้วเบียร์สะอาด"},{"text":"แก้วเหล้าสะอาด","status":"pending","owner":"","note":"","th":"แก้วเหล้าสะอาด"},{"text":"อุปกรณ์ Bar พร้อม","status":"pending","owner":"","note":"","th":"อุปกรณ์ บาร์ พร้อม"}],"th":"บาร์ / เครื่องดื่ม"},{"name":"Stock","total":20,"items":[{"text":"นับ Stock เบียร์","status":"pending","owner":"","note":"","th":"นับ สต็อก เบียร์"},{"text":"นับ Stock เหล้า","status":"pending","owner":"","note":"","th":"นับ สต็อก เหล้า"},{"text":"นับ Stock Soft Drink","status":"pending","owner":"","note":"","th":"นับ สต็อก Soft Drink"},{"text":"นับ Stock น้ำดื่ม","status":"pending","owner":"","note":"","th":"นับ สต็อก น้ำดื่ม"},{"text":"นับ Stock น้ำแข็ง","status":"pending","owner":"","note":"","th":"นับ สต็อก น้ำแข็ง"},{"text":"นับ Stock อาหารแห้ง","status":"pending","owner":"","note":"","th":"นับ สต็อก อาหารแห้ง"},{"text":"ตรวจสินค้าใกล้หมด","status":"pending","owner":"","note":"","th":"ตรวจสินค้าใกล้หมด"},{"text":"ตรวจสินค้าหมด","status":"pending","owner":"","note":"","th":"ตรวจสินค้าหมด"},{"text":"ตรวจสินค้าชำรุด","status":"pending","owner":"","note":"","th":"ตรวจสินค้าชำรุด"},{"text":"บันทึก Opening Stock","status":"pending","owner":"","note":"","th":"บันทึก สต็อกเปิดร้าน"},{"text":"ยอดในระบบตรงกับของจริง","status":"pending","owner":"","note":"","th":"ยอดในระบบตรงกับของจริง"},{"text":"ตรวจสินค้าที่ต้องเติม","status":"pending","owner":"","note":"","th":"ตรวจสินค้าที่ต้องเติม"},{"text":"จัดสินค้าเป็นหมวด","status":"pending","owner":"","note":"","th":"จัดสินค้าเป็นหมวด"},{"text":"ติดป้ายและรหัสสินค้า","status":"pending","owner":"","note":"","th":"ติดป้ายและรหัสสินค้า"},{"text":"ตรวจวันหมดอายุ","status":"pending","owner":"","note":"","th":"ตรวจวันหมดอายุ"},{"text":"จัด FIFO","status":"pending","owner":"","note":"","th":"จัด FIFO"},{"text":"พื้นที่เก็บของสะอาด","status":"pending","owner":"","note":"","th":"พื้นที่เก็บของสะอาด"},{"text":"พื้นที่เก็บของล็อกได้","status":"pending","owner":"","note":"","th":"พื้นที่เก็บของล็อกได้"},{"text":"ผู้รับผิดชอบ Stock พร้อม","status":"pending","owner":"","note":"","th":"ผู้รับผิดชอบ สต็อก พร้อม"},{"text":"บันทึกความผิดปกติ","status":"pending","owner":"","note":"","th":"บันทึกความผิดปกติ"}],"th":"สต็อก"},{"name":"POS / ระบบขาย","total":22,"items":[{"text":"เครื่อง POS เปิดใช้งาน","status":"pending","owner":"","note":"","th":"เครื่อง ระบบขายหน้าร้าน เปิดใช้งาน"},{"text":"Tablet/มือถือพนักงานพร้อม","status":"pending","owner":"","note":"","th":"แท็บเล็ต/มือถือพนักงานพร้อม"},{"text":"Printer พร้อม","status":"pending","owner":"","note":"","th":"เครื่องพิมพ์ พร้อม"},{"text":"Cash Drawer พร้อม","status":"pending","owner":"","note":"","th":"ลิ้นชักเงิน พร้อม"},{"text":"Internet ใช้งาน","status":"pending","owner":"","note":"","th":"อินเทอร์เน็ต ใช้งาน"},{"text":"Backup Internet พร้อมถ้ามี","status":"pending","owner":"","note":"","th":"สำรอง อินเทอร์เน็ต พร้อมถ้ามี"},{"text":"พนักงาน Login ได้","status":"pending","owner":"","note":"","th":"พนักงาน เข้าสู่ระบบ ได้"},{"text":"โต๊ะทั้งหมดแสดง","status":"pending","owner":"","note":"","th":"โต๊ะทั้งหมดแสดง"},{"text":"เมนูอาหารถูกต้อง","status":"pending","owner":"","note":"","th":"เมนูอาหารถูกต้อง"},{"text":"ราคาอาหารถูกต้อง","status":"pending","owner":"","note":"","th":"ราคาอาหารถูกต้อง"},{"text":"ราคาเครื่องดื่มถูกต้อง","status":"pending","owner":"","note":"","th":"ราคาเครื่องดื่มถูกต้อง"},{"text":"Promotion ถูกต้อง","status":"pending","owner":"","note":"","th":"โปรโมชั่น ถูกต้อง"},{"text":"Discount ใช้งาน","status":"pending","owner":"","note":"","th":"ส่วนลด ใช้งาน"},{"text":"Split Bill ใช้งาน","status":"pending","owner":"","note":"","th":"แยกบิล ใช้งาน"},{"text":"Cash Payment ใช้งาน","status":"pending","owner":"","note":"","th":"ชำระเงินสด ใช้งาน"},{"text":"Transfer Payment ใช้งาน","status":"pending","owner":"","note":"","th":"โอนเงิน ใช้งาน"},{"text":"Debt Payment ใช้งาน","status":"pending","owner":"","note":"","th":"ชำระหนี้ ใช้งาน"},{"text":"Void/Cancel ตามสิทธิ์","status":"pending","owner":"","note":"","th":"ยกเลิก/ยกเลิก ตามสิทธิ์"},{"text":"Order ไม่ตัด Stock","status":"pending","owner":"","note":"","th":"ออเดอร์ ไม่ตัด สต็อก"},{"text":"Payment ตัด Stock ถูกต้อง","status":"pending","owner":"","note":"","th":"การชำระเงิน ตัด สต็อก ถูกต้อง"},{"text":"ป้องกันการตัด Stock ซ้ำ","status":"pending","owner":"","note":"","th":"ป้องกันการตัด สต็อก ซ้ำ"},{"text":"ทดสอบพิมพ์ใบเสร็จ","status":"pending","owner":"","note":"","th":"ทดสอบพิมพ์ใบเสร็จ"}],"th":"ระบบขายหน้าร้าน / ระบบขาย"},{"name":"Cashier / การเงิน","total":20,"items":[{"text":"เงินทอนพร้อม","status":"pending","owner":"","note":"","th":"เงินทอนพร้อม"},{"text":"บันทึก Opening Cash","status":"pending","owner":"","note":"","th":"บันทึก Opening Cash"},{"text":"Cash Drawer พร้อม","status":"pending","owner":"","note":"","th":"ลิ้นชักเงิน พร้อม"},{"text":"QR Payment พร้อม","status":"pending","owner":"","note":"","th":"ชำระ QR พร้อม"},{"text":"บัญชีรับโอนพร้อม","status":"pending","owner":"","note":"","th":"บัญชีรับโอนพร้อม"},{"text":"ตรวจเครื่องรับเงิน","status":"pending","owner":"","note":"","th":"ตรวจเครื่องรับเงิน"},{"text":"ใบเสร็จพร้อม","status":"pending","owner":"","note":"","th":"ใบเสร็จพร้อม"},{"text":"ตรวจสิทธิ์ Cashier","status":"pending","owner":"","note":"","th":"ตรวจสิทธิ์ แคชเชียร์"},{"text":"ตรวจสิทธิ์ Discount","status":"pending","owner":"","note":"","th":"ตรวจสิทธิ์ ส่วนลด"},{"text":"ตรวจสิทธิ์ Void","status":"pending","owner":"","note":"","th":"ตรวจสิทธิ์ ยกเลิก"},{"text":"ตรวจสิทธิ์ Cancel Bill","status":"pending","owner":"","note":"","th":"ตรวจสิทธิ์ ยกเลิก Bill"},{"text":"ยอดเงินเปิดร้านมีผู้ตรวจสอบ","status":"pending","owner":"","note":"","th":"ยอดเงินเปิดร้านมีผู้ตรวจสอบ"},{"text":"เงินสำรองพร้อม","status":"pending","owner":"","note":"","th":"เงินสำรองพร้อม"},{"text":"เอกสารการเงินพร้อม","status":"pending","owner":"","note":"","th":"เอกสารการเงินพร้อม"},{"text":"ระบบบันทึกการรับเงินทำงาน","status":"pending","owner":"","note":"","th":"ระบบบันทึกการรับเงินทำงาน"},{"text":"ทดสอบเงินทอน","status":"pending","owner":"","note":"","th":"ทดสอบเงินทอน"},{"text":"ไม่มีบิลค้างจากวันก่อน","status":"pending","owner":"","note":"","th":"ไม่มีบิลค้างจากวันก่อน"},{"text":"ตรวจยอด Transfer ที่ค้าง","status":"pending","owner":"","note":"","th":"ตรวจยอด โอนเงิน ที่ค้าง"},{"text":"กำหนดผู้รับผิดชอบเงินสด","status":"pending","owner":"","note":"","th":"กำหนดผู้รับผิดชอบเงินสด"},{"text":"Manager อนุมัติ","status":"pending","owner":"","note":"","th":"ผู้จัดการ อนุมัติ"}],"th":"แคชเชียร์ / การเงิน"},{"name":"พนักงาน","total":20,"items":[{"text":"Manager มาครบ","status":"pending","owner":"","note":"","th":"ผู้จัดการ มาครบ"},{"text":"Supervisor มาครบ","status":"pending","owner":"","note":"","th":"หัวหน้างาน มาครบ"},{"text":"Waiter มาครบ","status":"pending","owner":"","note":"","th":"พนักงานบริการ มาครบ"},{"text":"Cashier มาครบ","status":"pending","owner":"","note":"","th":"แคชเชียร์ มาครบ"},{"text":"Bar มาครบ","status":"pending","owner":"","note":"","th":"บาร์ มาครบ"},{"text":"Kitchen มาครบ","status":"pending","owner":"","note":"","th":"ครัว มาครบ"},{"text":"Cleaner มาครบ","status":"pending","owner":"","note":"","th":"พนักงานทำความสะอาด มาครบ"},{"text":"Security มาครบ","status":"pending","owner":"","note":"","th":"รักษาความปลอดภัย มาครบ"},{"text":"Host/Service มาครบ","status":"pending","owner":"","note":"","th":"ต้อนรับ / บริการ มาครบ"},{"text":"พนักงานแต่ง Uniform ครบ","status":"pending","owner":"","note":"","th":"พนักงานแต่ง เครื่องแบบ ครบ"},{"text":"รองเท้าเรียบร้อย","status":"pending","owner":"","note":"","th":"รองเท้าเรียบร้อย"},{"text":"Name Tag พร้อม","status":"pending","owner":"","note":"","th":"ป้ายชื่อ พร้อม"},{"text":"ผมและใบหน้าเรียบร้อย","status":"pending","owner":"","note":"","th":"ผมและใบหน้าเรียบร้อย"},{"text":"มือและเล็บสะอาด","status":"pending","owner":"","note":"","th":"มือและเล็บสะอาด"},{"text":"พนักงานทราบหน้าที่","status":"pending","owner":"","note":"","th":"พนักงานทราบหน้าที่"},{"text":"แบ่งโซนโต๊ะแล้ว","status":"pending","owner":"","note":"","th":"แบ่งโซนโต๊ะแล้ว"},{"text":"Briefing โปรโมชั่นแล้ว","status":"pending","owner":"","note":"","th":"ชี้แจง โปรโมชั่นแล้ว"},{"text":"Briefing เมนูหมดแล้ว","status":"pending","owner":"","note":"","th":"ชี้แจง เมนูหมดแล้ว"},{"text":"Briefing Reservation/VIP แล้ว","status":"pending","owner":"","note":"","th":"ชี้แจง การจอง/วีไอพี แล้ว"},{"text":"Briefing กฎ Discount/Void/Cancel แล้ว","status":"pending","owner":"","note":"","th":"ชี้แจง กฎ ส่วนลด/ยกเลิก/ยกเลิก แล้ว"}],"th":"พนักงาน"},{"name":"Live Music / วงโฟล์คซอง","total":23,"items":[{"text":"นักดนตรีมาครบ","status":"pending","owner":"","note":"","th":"นักดนตรีมาครบ"},{"text":"กีตาร์พร้อม","status":"pending","owner":"","note":"","th":"กีตาร์พร้อม"},{"text":"เบสพร้อมถ้ามี","status":"pending","owner":"","note":"","th":"เบสพร้อมถ้ามี"},{"text":"Keyboard พร้อมถ้ามี","status":"pending","owner":"","note":"","th":"Keyboard พร้อมถ้ามี"},{"text":"ไมโครโฟนพร้อม","status":"pending","owner":"","note":"","th":"ไมโครโฟนพร้อม"},{"text":"Mic Stand พร้อม","status":"pending","owner":"","note":"","th":"ไมโครโฟน Stand พร้อม"},{"text":"Mixer พร้อม","status":"pending","owner":"","note":"","th":"มิกเซอร์ พร้อม"},{"text":"Monitor พร้อม","status":"pending","owner":"","note":"","th":"มอนิเตอร์ พร้อม"},{"text":"Main Speaker พร้อม","status":"pending","owner":"","note":"","th":"ลำโพงหลัก พร้อม"},{"text":"Subwoofer พร้อม","status":"pending","owner":"","note":"","th":"ซับวูฟเฟอร์ พร้อม"},{"text":"สายสัญญาณพร้อม","status":"pending","owner":"","note":"","th":"สายสัญญาณพร้อม"},{"text":"DI Box พร้อม","status":"pending","owner":"","note":"","th":"DI Box พร้อม"},{"text":"Power พร้อม","status":"pending","owner":"","note":"","th":"ไฟเลี้ยง พร้อม"},{"text":"Mic Battery พร้อม","status":"pending","owner":"","note":"","th":"ไมโครโฟน Battery พร้อม"},{"text":"Sound Check Vocal","status":"pending","owner":"","note":"","th":"ตรวจสอบเสียง Vocal"},{"text":"Sound Check Instrument","status":"pending","owner":"","note":"","th":"ตรวจสอบเสียง Instrument"},{"text":"ระดับเสียงเหมาะสม","status":"pending","owner":"","note":"","th":"ระดับเสียงเหมาะสม"},{"text":"Setlist พร้อม","status":"pending","owner":"","note":"","th":"รายการเพลง พร้อม"},{"text":"Set 1 พร้อม","status":"pending","owner":"","note":"","th":"Set 1 พร้อม"},{"text":"Set 2 พร้อม","status":"pending","owner":"","note":"","th":"Set 2 พร้อม"},{"text":"เพลงขอพร้อม","status":"pending","owner":"","note":"","th":"เพลงขอพร้อม"},{"text":"ตารางพักวงพร้อม","status":"pending","owner":"","note":"","th":"ตารางพักวงพร้อม"},{"text":"Transition ไป DJ พร้อม","status":"pending","owner":"","note":"","th":"เปลี่ยนช่วง ไป ดีเจ พร้อม"}],"th":"ดนตรีสด / วงโฟล์คซอง"},{"name":"DJ","total":20,"items":[{"text":"DJ มาถึงแล้ว","status":"pending","owner":"","note":"","th":"ดีเจ มาถึงแล้ว"},{"text":"Laptop พร้อม","status":"pending","owner":"","note":"","th":"แล็ปท็อป พร้อม"},{"text":"Controller พร้อม","status":"pending","owner":"","note":"","th":"คอนโทรลเลอร์ พร้อม"},{"text":"Mixer พร้อม","status":"pending","owner":"","note":"","th":"มิกเซอร์ พร้อม"},{"text":"Headphone พร้อม","status":"pending","owner":"","note":"","th":"หูฟัง พร้อม"},{"text":"สายสัญญาณพร้อม","status":"pending","owner":"","note":"","th":"สายสัญญาณพร้อม"},{"text":"เพลงพร้อม","status":"pending","owner":"","note":"","th":"เพลงพร้อม"},{"text":"Playlist พร้อม","status":"pending","owner":"","note":"","th":"เพลย์ลิสต์ พร้อม"},{"text":"Backup Music พร้อม","status":"pending","owner":"","note":"","th":"เพลงสำรอง พร้อม"},{"text":"USB Backup พร้อม","status":"pending","owner":"","note":"","th":"USB สำรอง พร้อม"},{"text":"Sound Check ผ่าน","status":"pending","owner":"","note":"","th":"ตรวจสอบเสียง ผ่าน"},{"text":"ระดับเสียงเหมาะสม","status":"pending","owner":"","note":"","th":"ระดับเสียงเหมาะสม"},{"text":"เพลงช่วงลูกค้าเข้าใหม่พร้อม","status":"pending","owner":"","note":"","th":"เพลงช่วงลูกค้าเข้าใหม่พร้อม"},{"text":"เพลงช่วง Peak Time พร้อม","status":"pending","owner":"","note":"","th":"เพลงช่วง Peak Time พร้อม"},{"text":"เพลงปิดร้านพร้อม","status":"pending","owner":"","note":"","th":"เพลงปิดร้านพร้อม"},{"text":"Transition จากวงพร้อม","status":"pending","owner":"","note":"","th":"เปลี่ยนช่วง จากวงพร้อม"},{"text":"ไฟ DJ พร้อมถ้ามี","status":"pending","owner":"","note":"","th":"ไฟ ดีเจ พร้อมถ้ามี"},{"text":"อุปกรณ์สำรองพร้อม","status":"pending","owner":"","note":"","th":"อุปกรณ์สำรองพร้อม"},{"text":"โต๊ะ DJ เรียบร้อย","status":"pending","owner":"","note":"","th":"โต๊ะ ดีเจ เรียบร้อย"},{"text":"กำหนดเวลาเริ่มและจบชัดเจน","status":"pending","owner":"","note":"","th":"กำหนดเวลาเริ่มและจบชัดเจน"}],"th":"ดีเจ"},{"name":"Sound & Lighting","total":20,"items":[{"text":"Main Speaker ทำงาน","status":"pending","owner":"","note":"","th":"ลำโพงหลัก ทำงาน"},{"text":"Subwoofer ทำงาน","status":"pending","owner":"","note":"","th":"ซับวูฟเฟอร์ ทำงาน"},{"text":"Monitor ทำงาน","status":"pending","owner":"","note":"","th":"มอนิเตอร์ ทำงาน"},{"text":"Mixer ทำงาน","status":"pending","owner":"","note":"","th":"มิกเซอร์ ทำงาน"},{"text":"Wireless Mic ทำงาน","status":"pending","owner":"","note":"","th":"ไมโครโฟนไร้สาย ทำงาน"},{"text":"Mic ทุกตัวมีสัญญาณ","status":"pending","owner":"","note":"","th":"ไมโครโฟน ทุกตัวมีสัญญาณ"},{"text":"สายสัญญาณไม่มีปัญหา","status":"pending","owner":"","note":"","th":"สายสัญญาณไม่มีปัญหา"},{"text":"ไฟ Main ทำงาน","status":"pending","owner":"","note":"","th":"ไฟ Main ทำงาน"},{"text":"ไฟโต๊ะทำงาน","status":"pending","owner":"","note":"","th":"ไฟโต๊ะทำงาน"},{"text":"ไฟ Bar ทำงาน","status":"pending","owner":"","note":"","th":"ไฟ บาร์ ทำงาน"},{"text":"ไฟ Stage ทำงาน","status":"pending","owner":"","note":"","th":"ไฟ Stage ทำงาน"},{"text":"ไฟ DJ ทำงาน","status":"pending","owner":"","note":"","th":"ไฟ ดีเจ ทำงาน"},{"text":"Moving Head ทำงาน","status":"pending","owner":"","note":"","th":"ไฟ Moving Head ทำงาน"},{"text":"LED ทำงาน","status":"pending","owner":"","note":"","th":"ไฟ LED ทำงาน"},{"text":"ไฟ Outdoor ทำงาน","status":"pending","owner":"","note":"","th":"ไฟ Outdoor ทำงาน"},{"text":"ไม่มีไฟกระพริบผิดปกติ","status":"pending","owner":"","note":"","th":"ไม่มีไฟกระพริบผิดปกติ"},{"text":"Scene/Lighting Preset พร้อม","status":"pending","owner":"","note":"","th":"ฉากแสง/ค่าระบบแสง พร้อม"},{"text":"ระดับเสียงรวมเหมาะสม","status":"pending","owner":"","note":"","th":"ระดับเสียงรวมเหมาะสม"},{"text":"ไม่มีเสียงจี่หรือฮัม","status":"pending","owner":"","note":"","th":"ไม่มีเสียงจี่หรือฮัม"},{"text":"ทดสอบไฟและเสียงพร้อมกัน","status":"pending","owner":"","note":"","th":"ทดสอบไฟและเสียงพร้อมกัน"}],"th":"ระบบเสียงและแสง"},{"name":"CCTV & Security","total":15,"items":[{"text":"CCTV ทางเข้าแสดงภาพ","status":"pending","owner":"","note":"","th":"กล้องวงจรปิด ทางเข้าแสดงภาพ"},{"text":"CCTV Cashier แสดงภาพ","status":"pending","owner":"","note":"","th":"กล้องวงจรปิด แคชเชียร์ แสดงภาพ"},{"text":"CCTV Bar แสดงภาพ","status":"pending","owner":"","note":"","th":"กล้องวงจรปิด บาร์ แสดงภาพ"},{"text":"CCTV Kitchen แสดงภาพ","status":"pending","owner":"","note":"","th":"กล้องวงจรปิด ครัว แสดงภาพ"},{"text":"CCTV ทางเดินแสดงภาพ","status":"pending","owner":"","note":"","th":"กล้องวงจรปิด ทางเดินแสดงภาพ"},{"text":"CCTV Parking แสดงภาพ","status":"pending","owner":"","note":"","th":"กล้องวงจรปิด ที่จอดรถ แสดงภาพ"},{"text":"CCTV จุดสำคัญแสดงภาพ","status":"pending","owner":"","note":"","th":"กล้องวงจรปิด จุดสำคัญแสดงภาพ"},{"text":"ระบบบันทึกทำงาน","status":"pending","owner":"","note":"","th":"ระบบบันทึกทำงาน"},{"text":"เวลาในกล้องถูกต้อง","status":"pending","owner":"","note":"","th":"เวลาในกล้องถูกต้อง"},{"text":"พื้นที่เก็บข้อมูลเพียงพอ","status":"pending","owner":"","note":"","th":"พื้นที่เก็บข้อมูลเพียงพอ"},{"text":"Monitor CCTV เปิด","status":"pending","owner":"","note":"","th":"จอ กล้องวงจรปิด เปิด"},{"text":"Security มาปฏิบัติงาน","status":"pending","owner":"","note":"","th":"รักษาความปลอดภัย มาปฏิบัติงาน"},{"text":"ทางเข้าออกปลอดภัย","status":"pending","owner":"","note":"","th":"ทางเข้าออกปลอดภัย"},{"text":"ไม่มีสิ่งกีดขวางทางหนี","status":"pending","owner":"","note":"","th":"ไม่มีสิ่งกีดขวางทางหนี"},{"text":"กุญแจพื้นที่สำคัญพร้อม","status":"pending","owner":"","note":"","th":"กุญแจพื้นที่สำคัญพร้อม"}],"th":"กล้องวงจรปิด & รักษาความปลอดภัย"},{"name":"Fire & Safety","total":15,"items":[{"text":"ถังดับเพลิงอยู่ตำแหน่ง","status":"pending","owner":"","note":"","th":"ถังดับเพลิงอยู่ตำแหน่ง"},{"text":"ตรวจสภาพถังดับเพลิง","status":"pending","owner":"","note":"","th":"ตรวจสภาพถังดับเพลิง"},{"text":"Emergency Exit ชัดเจน","status":"pending","owner":"","note":"","th":"ทางออกฉุกเฉิน ชัดเจน"},{"text":"Exit Sign ทำงาน","status":"pending","owner":"","note":"","th":"ป้ายทางออก ทำงาน"},{"text":"Emergency Light ทำงาน","status":"pending","owner":"","note":"","th":"ไฟฉุกเฉิน ทำงาน"},{"text":"ทางหนีไฟโล่ง","status":"pending","owner":"","note":"","th":"ทางหนีไฟโล่ง"},{"text":"First Aid Kit พร้อม","status":"pending","owner":"","note":"","th":"ชุดปฐมพยาบาล พร้อม"},{"text":"ตรวจ Gas Shutoff","status":"pending","owner":"","note":"","th":"ตรวจ วาล์วปิดแก๊ส"},{"text":"ตรวจ Main Electrical Breaker","status":"pending","owner":"","note":"","th":"ตรวจ เบรกเกอร์ไฟหลัก"},{"text":"สายไฟไม่มีความเสียหาย","status":"pending","owner":"","note":"","th":"สายไฟไม่มีความเสียหาย"},{"text":"ปลั๊กไฟไม่ร้อนผิดปกติ","status":"pending","owner":"","note":"","th":"ปลั๊กไฟไม่ร้อนผิดปกติ"},{"text":"พื้นไม่ลื่น","status":"pending","owner":"","note":"","th":"พื้นไม่ลื่น"},{"text":"ไม่มีสายไฟขวางทาง","status":"pending","owner":"","note":"","th":"ไม่มีสายไฟขวางทาง"},{"text":"อุปกรณ์ฉุกเฉินเข้าถึงได้","status":"pending","owner":"","note":"","th":"อุปกรณ์ฉุกเฉินเข้าถึงได้"},{"text":"พนักงานทราบจุดรวมพล","status":"pending","owner":"","note":"","th":"พนักงานทราบจุดรวมพล"}],"th":"ความปลอดภัยและอัคคีภัย"},{"name":"Reservation / VIP","total":20,"items":[{"text":"ตรวจ Reservation วันนี้","status":"pending","owner":"","note":"","th":"ตรวจ การจอง วันนี้"},{"text":"ตรวจเวลาจอง","status":"pending","owner":"","note":"","th":"ตรวจเวลาจอง"},{"text":"ตรวจจำนวนลูกค้า","status":"pending","owner":"","note":"","th":"ตรวจจำนวนลูกค้า"},{"text":"ตรวจชื่อผู้จอง","status":"pending","owner":"","note":"","th":"ตรวจชื่อผู้จอง"},{"text":"ตรวจเบอร์โทร","status":"pending","owner":"","note":"","th":"ตรวจเบอร์โทร"},{"text":"ตรวจโต๊ะที่จัดให้","status":"pending","owner":"","note":"","th":"ตรวจโต๊ะที่จัดให้"},{"text":"ตรวจ VIP","status":"pending","owner":"","note":"","th":"ตรวจ วีไอพี"},{"text":"ตรวจ Birthday","status":"pending","owner":"","note":"","th":"ตรวจ Birthday"},{"text":"ตรวจ Special Request","status":"pending","owner":"","note":"","th":"ตรวจ Special Request"},{"text":"ตรวจ Deposit","status":"pending","owner":"","note":"","th":"ตรวจ Deposit"},{"text":"โต๊ะจองจัดเตรียมแล้ว","status":"pending","owner":"","note":"","th":"โต๊ะจองจัดเตรียมแล้ว"},{"text":"Menu พร้อม","status":"pending","owner":"","note":"","th":"เมนู พร้อม"},{"text":"เครื่องดื่มต้อนรับพร้อมถ้ามี","status":"pending","owner":"","note":"","th":"เครื่องดื่มต้อนรับพร้อมถ้ามี"},{"text":"พนักงานรับผิดชอบโต๊ะทราบแล้ว","status":"pending","owner":"","note":"","th":"พนักงานรับผิดชอบโต๊ะทราบแล้ว"},{"text":"Manager ทราบ VIP","status":"pending","owner":"","note":"","th":"ผู้จัดการ ทราบ วีไอพี"},{"text":"ป้าย Reserved พร้อม","status":"pending","owner":"","note":"","th":"ป้าย Reserved พร้อม"},{"text":"ระบบ POS บันทึก Reservation","status":"pending","owner":"","note":"","th":"ระบบ ระบบขายหน้าร้าน บันทึก การจอง"},{"text":"ตรวจโต๊ะสำรอง","status":"pending","owner":"","note":"","th":"ตรวจโต๊ะสำรอง"},{"text":"ตรวจการเปลี่ยนแปลงการจองล่าสุด","status":"pending","owner":"","note":"","th":"ตรวจการเปลี่ยนแปลงการจองล่าสุด"},{"text":"ยืนยันรายการพิเศษ","status":"pending","owner":"","note":"","th":"ยืนยันรายการพิเศษ"}],"th":"การจอง / วีไอพี"},{"name":"Marketing / Promotion","total":20,"items":[{"text":"Promotion วันนี้ยืนยันแล้ว","status":"pending","owner":"","note":"","th":"โปรโมชั่น วันนี้ยืนยันแล้ว"},{"text":"ราคา Promotion ถูกต้อง","status":"pending","owner":"","note":"","th":"ราคา โปรโมชั่น ถูกต้อง"},{"text":"Promotion ใน POS ตรงกับ Menu","status":"pending","owner":"","note":"","th":"โปรโมชั่น ใน ระบบขายหน้าร้าน ตรงกับ เมนู"},{"text":"Promotion ในป้ายตรงกับ POS","status":"pending","owner":"","note":"","th":"โปรโมชั่น ในป้ายตรงกับ ระบบขายหน้าร้าน"},{"text":"พนักงานทราบ Promotion","status":"pending","owner":"","note":"","th":"พนักงานทราบ โปรโมชั่น"},{"text":"ตรวจ Happy Hour","status":"pending","owner":"","note":"","th":"ตรวจ Happy Hour"},{"text":"ตรวจ Beer Promotion","status":"pending","owner":"","note":"","th":"ตรวจ เบียร์ โปรโมชั่น"},{"text":"ตรวจ Food Promotion","status":"pending","owner":"","note":"","th":"ตรวจ Food โปรโมชั่น"},{"text":"ตรวจ Birthday Promotion","status":"pending","owner":"","note":"","th":"ตรวจ Birthday โปรโมชั่น"},{"text":"ตรวจ Event วันนี้","status":"pending","owner":"","note":"","th":"ตรวจ กิจกรรม วันนี้"},{"text":"Facebook Post พร้อม","status":"pending","owner":"","note":"","th":"Facebook Post พร้อม"},{"text":"TikTok/Content พร้อมถ้ามี","status":"pending","owner":"","note":"","th":"TikTok/เนื้อหา พร้อมถ้ามี"},{"text":"ป้าย Promotion พร้อม","status":"pending","owner":"","note":"","th":"ป้าย โปรโมชั่น พร้อม"},{"text":"QR Promotion ใช้งาน","status":"pending","owner":"","note":"","th":"QR โปรโมชั่น ใช้งาน"},{"text":"ภาพและสื่อประชาสัมพันธ์พร้อม","status":"pending","owner":"","note":"","th":"ภาพและสื่อประชาสัมพันธ์พร้อม"},{"text":"กำหนดผู้รับผิดชอบ Promotion","status":"pending","owner":"","note":"","th":"กำหนดผู้รับผิดชอบ โปรโมชั่น"},{"text":"ตรวจเงื่อนไขส่วนลด","status":"pending","owner":"","note":"","th":"ตรวจเงื่อนไขส่วนลด"},{"text":"ตรวจเวลาสิ้นสุด Promotion","status":"pending","owner":"","note":"","th":"ตรวจเวลาสิ้นสุด โปรโมชั่น"},{"text":"ไม่มีโปรโมชั่นเก่าค้าง","status":"pending","owner":"","note":"","th":"ไม่มีโปรโมชั่นเก่าค้าง"},{"text":"Manager อนุมัติการสื่อสาร","status":"pending","owner":"","note":"","th":"ผู้จัดการ อนุมัติการสื่อสาร"}],"th":"การตลาด / โปรโมชั่น"},{"name":"Final Manager Check","total":22,"items":[{"text":"ร้านพร้อมเปิด","status":"pending","owner":"","note":"","th":"ร้านพร้อมเปิด"},{"text":"พื้นที่ลูกค้าพร้อม","status":"pending","owner":"","note":"","th":"พื้นที่ลูกค้าพร้อม"},{"text":"โต๊ะพร้อม","status":"pending","owner":"","note":"","th":"โต๊ะพร้อม"},{"text":"ห้องน้ำพร้อม","status":"pending","owner":"","note":"","th":"ห้องน้ำพร้อม"},{"text":"ครัวพร้อม","status":"pending","owner":"","note":"","th":"ครัวพร้อม"},{"text":"วัตถุดิบพร้อม","status":"pending","owner":"","note":"","th":"วัตถุดิบพร้อม"},{"text":"Food Prep พร้อม","status":"pending","owner":"","note":"","th":"Food การเตรียม พร้อม"},{"text":"Bar พร้อม","status":"pending","owner":"","note":"","th":"บาร์ พร้อม"},{"text":"Stock พร้อม","status":"pending","owner":"","note":"","th":"สต็อก พร้อม"},{"text":"POS พร้อม","status":"pending","owner":"","note":"","th":"ระบบขายหน้าร้าน พร้อม"},{"text":"Cashier พร้อม","status":"pending","owner":"","note":"","th":"แคชเชียร์ พร้อม"},{"text":"พนักงานพร้อม","status":"pending","owner":"","note":"","th":"พนักงานพร้อม"},{"text":"Reservation/VIP พร้อม","status":"pending","owner":"","note":"","th":"การจอง/วีไอพี พร้อม"},{"text":"CCTV พร้อม","status":"pending","owner":"","note":"","th":"กล้องวงจรปิด พร้อม"},{"text":"Safety พร้อม","status":"pending","owner":"","note":"","th":"Safety พร้อม"},{"text":"Sound พร้อม","status":"pending","owner":"","note":"","th":"Sound พร้อม"},{"text":"Live Music พร้อม","status":"pending","owner":"","note":"","th":"ดนตรีสด พร้อม"},{"text":"DJ พร้อม","status":"pending","owner":"","note":"","th":"ดีเจ พร้อม"},{"text":"Lighting พร้อม","status":"pending","owner":"","note":"","th":"Lighting พร้อม"},{"text":"Promotion พร้อม","status":"pending","owner":"","note":"","th":"โปรโมชั่น พร้อม"},{"text":"ไม่มีปัญหาค้างที่กระทบการเปิดร้าน","status":"pending","owner":"","note":"","th":"ไม่มีปัญหาค้างที่กระทบการเปิดร้าน"},{"text":"Manager อนุมัติเปิดร้าน","status":"pending","owner":"","note":"","th":"ผู้จัดการ อนุมัติเปิดร้าน"}],"th":"ตรวจสอบขั้นสุดท้ายโดยผู้จัดการ"}];
+const APP_VERSION="4.0-pages-summary-checklist-pending";
+let state;
+let currentCat=-1;
+let currentPendingCat=-1;
+
+const LANG_KEY="openingChecklistLang";
+let lang=localStorage.getItem(LANG_KEY)||"lo";
+function catLabel(c){return lang==="th"?(c.th||c.name):(c.lo||c.name)}
+function itemLabel(x){return lang==="th"?(x.th||x.text):(x.lo||x.text)}
+function L(th,lo){return lang==="th"?th:lo}
+function setLanguage(next){
+ lang=next; localStorage.setItem(LANG_KEY,lang);
+ document.documentElement.lang=lang==="th"?"th":"lo";
+ updateLanguageButtons();
+ renderCurrentPage();
+}
+function updateLanguageButtons(){
+ const th=document.getElementById("langTH"),lo=document.getElementById("langLO");
+ if(th)th.classList.toggle("active",lang==="th");
+ if(lo)lo.classList.toggle("active",lang==="lo");
+}
+function renderCurrentPage(){
+ const active=document.querySelector(".page.active");
+ const n=active?Number(active.id.replace("page","")):1;
+ if(n===1)renderDashboard();
+ if(n===2){
+   if(document.getElementById("checkDetail").style.display!=="none" && currentCat>=0)renderDetail();
+   else renderCheckHome();
+ }
+ if(n===3){
+   if(document.getElementById("pendingDetail").style.display!=="none" && currentPendingCat>=0)openPendingCategory(currentPendingCat);
+   else renderPending();
+ }
+ updateStaticLanguage();
+}
+
+
+function save(){localStorage.setItem("openingChecklist",JSON.stringify(state))}
+function load(){
+ const savedVersion=localStorage.getItem("openingChecklistVersion");
+ if(savedVersion!==APP_VERSION){
+   localStorage.removeItem("openingChecklist");
+   localStorage.setItem("openingChecklistVersion",APP_VERSION);
+ }
+ const raw=localStorage.getItem("openingChecklist");
+ if(raw){
+   try{state=JSON.parse(raw)}catch(e){state=null}
+ }
+ if(!state){
+   state=JSON.parse(JSON.stringify(seed));
+   save();
+ }
+}
+function totals(){
+ let all=0,pass=0,pending=0,fixed=0;
+ state.forEach(c=>c.items.forEach(x=>{
+   all++;
+   if(x.status==="pass")pass++;
+   else if(x.status==="fixed")fixed++;
+   else pending++;
+ }));
+ return {all,pass,pending,fixed,done:pass+fixed};
+}
+function readyPct(){let t=totals();return t.all?Math.round(t.done/t.all*100):0}
+function goPage(n){
+ document.querySelectorAll(".page").forEach(x=>x.classList.remove("active"));
+ document.getElementById("page"+n).classList.add("active");
+ [1,2,3].forEach(i=>document.getElementById("nav"+i).classList.toggle("active",i===n));
+ if(n===1)renderDashboard();
+ if(n===2)renderCheckHome();
+ if(n===3)renderPending();
+ window.scrollTo(0,0);
+}
+function renderDashboard(){
+ const t=totals(),pct=readyPct();
+ document.getElementById("readyPercent").textContent=pct+"%";
+ document.getElementById("overallFill").style.width=pct+"%";
+ document.getElementById("kPass").textContent=t.pass;
+ document.getElementById("kPending").textContent=t.pending;
+ document.getElementById("kFixed").textContent=t.fixed;
+ const full=state.filter(c=>c.items.every(x=>x.status==="pass"||x.status==="fixed")).length;
+ document.getElementById("kFull").textContent=full+"/"+state.length;
+ const badge=document.getElementById("readyBadge");
+ if(t.pending===0){badge.textContent="🟢 พร้อมเปิด";badge.className="badge ready";document.getElementById("readyText").textContent="ตรวจครบแล้ว ไม่มีงานรอแก้ไข"}
+ else{badge.textContent="🟡 ยังมีงานค้าง";badge.className="badge notready";document.getElementById("readyText").textContent="ต้องจัดการรายการรอแก้ไขก่อนเปิดร้าน"}
+ document.getElementById("dashCats").innerHTML=state.map((c,i)=>{
+   let pass=c.items.filter(x=>x.status==="pass").length;
+   let fixed=c.items.filter(x=>x.status==="fixed").length;
+   let pending=c.items.filter(x=>x.status==="pending").length;
+   let pc=Math.round((pass+fixed)/c.items.length*100);
+   let color=pending? "var(--amber)":"var(--green)";
+   return `<div class="cat-card dashboard-simple-card">
+     <div class="cat-name dashboard-cat-name">${catLabel(c)}</div>
+     <div class="dashboard-progress-row">
+       <div class="progress"><div class="fill" style="width:${pc}%;background:${color}"></div></div>
+       <span class="dashboard-pct">${pc}%</span>
+     </div>
+   </div>`;
+ }).join("");
+ const pending=state.flatMap((c,ci)=>c.items.map((x,ii)=>({...x,ci,ii,cat:c.name}))).filter(x=>x.status==="pending").slice(0,8);
+
+}
+function renderCheckHome(){
+ document.getElementById("checkHome").style.display="block";
+ document.getElementById("checkDetail").style.display="none";
+ document.getElementById("checkCats").innerHTML=state.map((c,i)=>{
+   let pass=c.items.filter(x=>x.status==="pass").length,fixed=c.items.filter(x=>x.status==="fixed").length,pending=c.items.filter(x=>x.status==="pending").length;
+   let pc=Math.round((pass+fixed)/c.items.length*100);
+   return `<div class="cat-card">
+    <div class="cat-top"><div><div class="cat-num">หมวด ${String(i+1).padStart(2,"0")}</div><div class="cat-name">${catLabel(c)}</div></div>
+    <span class="badge ${pending?'notready':'ready'}">${pc}%</span></div>
+    <div class="cat-meta">ผ่าน ${pass} • แก้ไขแล้ว ${fixed} • รอแก้ไข ${pending}</div>
+    <div class="progress"><div class="fill" style="width:${pc}%"></div></div>
+    <button class="primary" style="width:100%;margin-top:10px" onclick="openChecklist(${i})">เข้าไปตรวจ</button>
+   </div>`;
+ }).join("");
+}
+function openChecklist(i){
+ currentCat=i;
+ document.getElementById("checkHome").style.display="none";
+ document.getElementById("checkDetail").style.display="block";
+ document.getElementById("detailTitle").textContent=catLabel(state[i]);
+ document.getElementById("detailSub").textContent=`หมวด ${String(i+1).padStart(2,"0")} • ${state[i].items.length} รายการ`;
+ document.getElementById("itemSearch").value="";
+ document.getElementById("itemFilter").value="all";
+ renderDetail();
+}
+function closeChecklist(){renderCheckHome()}
+function renderDetail(){
+ const c=state[currentCat]; if(!c)return;
+ const q=document.getElementById("itemSearch").value.toLowerCase();
+ const f=document.getElementById("itemFilter").value;
+ const arr=c.items.map((x,i)=>({x,i})).filter(o=>(!q||o.x.text.toLowerCase().includes(q))&&(f==="all"||o.x.status===f));
+ document.getElementById("detailItems").innerHTML=arr.map(o=>{
+   const x=o.x,i=o.i;
+   return `<div class="item">
+    <div class="item-title">${itemLabel(x)}</div>
+    <div class="item-note">${x.status==="pass"?"ผ่านแล้ว":x.status==="fixed"?"แก้ไขแล้ว":"รอแก้ไข"}${x.note?` • ${x.note}`:""}</div>
+    <div class="checks">
+      <label class="check-label"><input type="checkbox" ${x.status==="pass"?"checked":""} onchange="setStatus(${i},'pass',this.checked)"> ผ่าน</label>
+      <label class="check-label"><input type="checkbox" ${x.status==="pending"?"checked":""} onchange="setStatus(${i},'pending',this.checked)"> รอแก้ไข</label>
+    </div>
+    <div class="note-row">
+      <input id="note-${i}" value="${escapeHtml(x.note||"")}" placeholder="เพิ่มความคิดเห็น / สิ่งที่ต้องแก้ไข">
+      <button class="small-btn" onclick="saveNote(${i})">บันทึกคอมเม้น</button>
+    </div>
+   </div>`;
+ }).join("") || '<div class="empty">ไม่พบรายการ</div>';
+}
+function setStatus(i,status,checked){
+ state[currentCat].items[i].status=checked?status:"pending";
+ save();renderDetail();renderDashboard();
+}
+function saveNote(i){
+ const v=document.getElementById("note-"+i).value.trim();
+ state[currentCat].items[i].note=v;
+ if(v && state[currentCat].items[i].status==="pass")state[currentCat].items[i].status="pending";
+ save();renderDetail();renderPending();renderDashboard();
+}
+function renderPending(){
+ const groups=state.map((c,ci)=>({
+   c,ci,
+   items:c.items.map((x,ii)=>({...x,ii})).filter(x=>x.status==="pending")
+ })).filter(g=>g.items.length);
+ const t=totals();
+ document.getElementById("pCount").textContent=t.pending;
+ document.getElementById("pCats").textContent=groups.length;
+ document.getElementById("pFixed").textContent=t.fixed;
+ document.getElementById("pReady").textContent=readyPct()+"%";
+
+ document.getElementById("pendingHome").style.display="block";
+ document.getElementById("pendingDetail").style.display="none";
+
+ document.getElementById("pendingCats").innerHTML=groups.length?groups.map(g=>{
+   const pc=Math.round((g.c.items.filter(x=>x.status==="pass"||x.status==="fixed").length/g.c.items.length)*100);
+   return `<div class="cat-card">
+     <div class="cat-top">
+       <div>
+        <div class="cat-num">หมวด ${String(g.ci+1).padStart(2,"0")}</div>
+        <div class="cat-name">${catLabel(g.c)}</div>
+       </div>
+       <span class="badge notready">${g.items.length} รายการ</span>
+     </div>
+     <div class="cat-meta">ความพร้อม ${pc}% • มีรายการรอแก้ไข ${g.items.length} รายการ</div>
+     <div class="progress"><div class="fill" style="width:${pc}%"></div></div>
+     <button class="primary" style="width:100%;margin-top:10px" onclick="openPendingCategory(${g.ci})">ดูรายการรอแก้ไข</button>
+   </div>`;
+ }).join(""):'<div class="panel empty" style="grid-column:1/-1">🎉 ไม่มีรายการรอแก้ไข<br><span style="font-size:11px">รายการที่แก้ไขแล้วจะถูกนำออกจากหน้านี้อัตโนมัติ</span></div>';
+}
+
+function openPendingCategory(ci){
+ currentPendingCat=ci;
+ const c=state[ci];
+ const items=c.items.map((x,ii)=>({...x,ii})).filter(x=>x.status==="pending");
+ if(!items.length){renderPending();return}
+ document.getElementById("pendingHome").style.display="none";
+ document.getElementById("pendingDetail").style.display="block";
+ document.getElementById("pendingDetailTitle").textContent=c.name;
+ document.getElementById("pendingDetailSub").textContent=`หมวด ${String(ci+1).padStart(2,"0")} • ${items.length} รายการรอแก้ไข`;
+ document.getElementById("pendingItems").innerHTML=items.map(x=>`
+   <div class="item">
+     <div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start">
+       <div style="flex:1">
+        <div class="item-title">🟡 ${itemLabel(x)}</div>
+        <div class="item-note" style="color:var(--gold2);margin-top:7px">💬 ${x.note?escapeHtml(x.note):"ยังไม่มีคอมเม้น"}</div>
+       </div>
+       <button class="fixbtn" onclick="markFixed(${ci},${x.ii})">แก้ไขแล้ว</button>
+     </div>
+   </div>`).join("");
+}
+
+function closePendingDetail(){
+ currentPendingCat=-1;
+ renderPending();
+}
+function markFixed(ci,ii){
+ state[ci].items[ii].status="fixed";
+ save();
+ renderDashboard();
+ renderCheckHome();
+ const remaining=state[ci].items.filter(x=>x.status==="pending").length;
+ if(remaining>0){
+   openPendingCategory(ci);
+ }else{
+   renderPending();
+ }
+}
+function escapeHtml(s){
+ return String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));
+}
+
+const UI={
+ th:{
+  "OPENING CHECKLIST":"OPENING CHECKLIST","รีเซ็ต":"รีเซ็ต","① ສະຫຼຸບ":"① ສະຫຼຸບ","② ເຊັກລິສ":"② เช็คลิสต์","③ ລໍຖ້າແກ້ໄຂ":"③ ລໍຖ້າແກ້ໄຂ",
+  "Dashboard สรุปความพร้อม":"แดชบอร์ดสรุปความพร้อม","ภาพรวมก่อนเปิดร้าน • อาหาร • Bar • Live Music • DJ":"ภาพรวมก่อนเปิดร้าน • อาหาร • บาร์ • ดนตรีสด • ดีเจ",
+  "กำลังตรวจสอบ":"กำลังตรวจสอบ","ยังไม่พร้อม":"ยังไม่พร้อม","พร้อมเปิด":"พร้อมเปิด","ตรวจครบแล้ว ไม่มีงานรอแก้ไข":"ตรวจครบแล้ว ไม่มีงานรอแก้ไข",
+  "ต้องจัดการรายการรอแก้ไขก่อนเปิดร้าน":"ต้องจัดการรายการรอแก้ไขก่อนเปิดร้าน","ผ่าน":"ผ่าน","แก้ไขแล้ว":"แก้ไขแล้ว","รอแก้ไข":"รอแก้ไข","หมวดครบ":"หมวดครบ",
+  "ความพร้อมแต่ละหมวด":"ความพร้อมแต่ละหมวด","Checklist":"เช็คลิสต์","เลือกหมวดที่ต้องการตรวจ แล้วกดเข้าไปทำงาน":"เลือกหมวดที่ต้องการตรวจ แล้วกดเข้าไปทำงาน",
+  "เข้าไปตรวจ":"เข้าไปตรวจ","กลับรายการหมวด":"กลับรายการหมวด","ทั้งหมด":"ทั้งหมด","ค้นหารายการ...":"ค้นหารายการ...",
+  "เพิ่มความคิดเห็น / สิ่งที่ต้องแก้ไข":"เพิ่มความคิดเห็น / สิ่งที่ต้องแก้ไข","บันทึกคอมเม้น":"บันทึกความคิดเห็น",
+  "รายการรอแก้ไข":"รายการรอแก้ไข","เลือกหมวดหมู่ก่อน แล้วดูเฉพาะรายการที่ต้องแก้ไข":"เลือกหมวดหมู่ก่อน แล้วดูเฉพาะรายการที่ต้องแก้ไข",
+  "รอแก้ไขทั้งหมด":"รอแก้ไขทั้งหมด","หมวดที่มีงานค้าง":"หมวดที่มีงานค้าง","แก้ไขแล้ววันนี้":"แก้ไขแล้ววันนี้","ความพร้อมรวม":"ความพร้อมรวม",
+  "เลือกหมวดที่ต้องแก้ไข":"เลือกหมวดที่ต้องแก้ไข","ดูรายการรอแก้ไข":"ดูรายการรอแก้ไข","รายการ":"รายการ",
+  "ความพร้อม":"ความพร้อม","มีรายการรอแก้ไข":"มีรายการรอแก้ไข","ยังไม่มีคอมเม้น":"ยังไม่มีความคิดเห็น",
+  "แก้ไขแล้ว":"แก้ไขแล้ว","ไม่มีรายการรอแก้ไข":"ไม่มีรายการรอแก้ไข","รายการที่แก้ไขแล้วจะถูกนำออกจากหน้านี้อัตโนมัติ":"รายการที่แก้ไขแล้วจะถูกนำออกจากหน้านี้อัตโนมัติ",
+  "ต้องการล้างผลการตรวจทั้งหมดและเริ่มใหม่หรือไม่?":"ต้องการล้างผลการตรวจทั้งหมดและเริ่มใหม่หรือไม่?",
+  "หมวด":"หมวด","รายการรอแก้ไข":"รายการรอแก้ไข","ผ่านแล้ว":"ผ่านแล้ว"
+ },
+ lo:{
+  "OPENING CHECKLIST":"OPENING CHECKLIST","รีเซ็ต":"ຣີເຊັດ","① ສະຫຼຸບ":"① ສະຫຼຸບ","② ເຊັກລິສ":"② ເຊັກລິສ","③ ລໍຖ້າແກ້ໄຂ":"③ ລໍຖ້າແກ້ໄຂ",
+  "Dashboard สรุปความพร้อม":"ແດັຊບອດສະຫຼຸບຄວາມພ້ອມ","ภาพรวมก่อนเปิดร้าน • อาหาร • Bar • Live Music • DJ":"ພາບລວມກ່ອນເປີດຮ້ານ • ອາຫານ • ບາ • ດົນຕີສົດ • DJ",
+  "กำลังตรวจสอบ":"ກຳລັງກວດສອບ","ยังไม่พร้อม":"ຍັງບໍ່ພ້ອມ","พร้อมเปิด":"ພ້ອມເປີດ","ตรวจครบแล้ว ไม่มีงานรอแก้ไข":"ກວດຄົບແລ້ວ ບໍ່ມີວຽກລໍຖ້າແກ້ໄຂ",
+  "ต้องจัดการรายการรอแก้ไขก่อนเปิดร้าน":"ຕ້ອງແກ້ໄຂລາຍການຄ້າງກ່ອນເປີດຮ້ານ","ผ่าน":"ຜ່ານ","แก้ไขแล้ว":"ແກ້ໄຂແລ້ວ","รอแก้ไข":"ລໍຖ້າແກ້ໄຂ","หมวดครบ":"ໝວດຄົບ",
+  "ความพร้อมแต่ละหมวด":"ຄວາມພ້ອມແຕ່ລະໝວດ","Checklist":"ເຊັກລິສ","เลือกหมวดที่ต้องการตรวจ แล้วกดเข้าไปทำงาน":"ເລືອກໝວດທີ່ຕ້ອງການກວດ ແລ້ວກົດເຂົ້າໄປເຮັດວຽກ",
+  "เข้าไปตรวจ":"ເຂົ້າໄປກວດ","กลับรายการหมวด":"ກັບລາຍການໝວດ","ทั้งหมด":"ທັງໝົດ","ค้นหารายการ...":"ຄົ້ນຫາລາຍການ...",
+  "เพิ่มความคิดเห็น / สิ่งที่ต้องแก้ไข":"ເພີ່ມຄຳເຫັນ / ສິ່ງທີ່ຕ້ອງແກ້","บันทึกคอมเม้น":"ບັນທຶກຄຳເຫັນ",
+  "รายการรอแก้ไข":"ລາຍການລໍຖ້າແກ້ໄຂ","เลือกหมวดหมู่ก่อน แล้วดูเฉพาะรายการที่ต้องแก้ไข":"ເລືອກໝວດກ່ອນ ແລ້ວເບິ່ງສະເພາະລາຍການທີ່ຕ້ອງແກ້ໄຂ",
+  "รอแก้ไขทั้งหมด":"ລໍຖ້າແກ້ໄຂທັງໝົດ","หมวดที่มีงานค้าง":"ໝວດທີ່ມີວຽກຄ້າງ","แก้ไขแล้ววันนี้":"ແກ້ໄຂແລ້ວ","ความพร้อมรวม":"ຄວາມພ້ອມລວມ",
+  "เลือกหมวดที่ต้องแก้ไข":"ເລືອກໝວດທີ່ຕ້ອງແກ້ໄຂ","ดูรายการรอแก้ไข":"ເບິ່ງລາຍການລໍຖ້າແກ້ໄຂ","รายการ":"ລາຍການ",
+  "ความพร้อม":"ຄວາມພ້ອມ","มีรายการรอแก้ไข":"ມີລາຍການລໍຖ້າແກ້ໄຂ","ยังไม่มีคอมเม้น":"ຍັງບໍ່ມີຄຳເຫັນ",
+  "ไม่มีรายการรอแก้ไข":"ບໍ່ມີລາຍການລໍຖ້າແກ້ໄຂ","รายการที่แก้ไขแล้วจะถูกนำออกจากหน้านี้อัตโนมัติ":"ລາຍການທີ່ແກ້ໄຂແລ້ວຈະຖືກນຳອອກຈາກໜ້ານີ້ອັດຕະໂນມັດ",
+  "ต้องการล้างผลการตรวจทั้งหมดและเริ่มใหม่หรือไม่?":"ຕ້ອງການລ້າງຜົນການກວດທັງໝົດ ແລະ ເລີ່ມໃໝ່ບໍ?",
+  "หมวด":"ໝວດ","ผ่านแล้ว":"ຜ່ານແລ້ວ"
+ }
+};
+function updateStaticLanguage(){
+ const target=UI[lang];
+ const source=lang==="th"?UI.lo:UI.th;
+ const pairs=Object.keys(source)
+   .filter(k=>target[k])
+   .sort((a,b)=>b.length-a.length)
+   .map(k=>[k,target[k]]);
+ document.querySelectorAll("body *").forEach(el=>{
+   if(el.children.length===0 && el.childNodes.length===1 && el.firstChild.nodeType===3){
+     let s=el.textContent;
+     for(const [from,to] of pairs) if(s.includes(from)) s=s.split(from).join(to);
+     el.textContent=s;
+   }
+ });
+ document.querySelectorAll("input[placeholder]").forEach(el=>{
+   let s=el.getAttribute("placeholder");
+   for(const [from,to] of pairs) if(s.includes(from)) s=s.split(from).join(to);
+   el.setAttribute("placeholder",s);
+ });
+}
+
+Object.assign(UI.lo,{
+ "ผ่าน ":"ຜ່ານ ","แก้ไขแล้ว ":"ແກ້ໄຂແລ້ວ ","รอแก้ไข ":"ລໍຖ້າແກ້ໄຂ ",
+ "หมวด ":"ໝວດ ","รายการ ":"ລາຍການ ","ความพร้อม ":"ຄວາມພ້ອມ ",
+ "รายการรอแก้ไข ":"ລາຍການລໍຖ້າແກ້ໄຂ ","รายการรอแก้ไข":"ລາຍການລໍຖ້າແກ້ໄຂ",
+ "ยังไม่มีคอมเม้น":"ຍັງບໍ່ມີຄຳເຫັນ","ตรวจ":"ກວດ"
+});
+Object.assign(UI.th,{
+ "ຜ່ານ ":"ผ่าน ","ແກ້ໄຂແລ້ວ ":"แก้ไขแล้ว ","ລໍຖ້າແກ້ໄຂ ":"รอแก้ไข ",
+ "ໝວດ ":"หมวด ","ລາຍການ ":"รายการ ","ຄວາມພ້ອມ ":"ความพร้อม ",
+ "ລາຍການລໍຖ້າແກ້ໄຂ ":"รายการรอแก้ไข ","ລາຍການລໍຖ້າແກ້ໄຂ":"รายการรอแก้ไข",
+ "ຍັງບໍ່ມີຄຳເຫັນ":"ยังไม่มีความคิดเห็น","ກວດ":"ตรวจ"
+});
+function resetAll(){
+ if(confirm("ต้องการล้างผลการตรวจทั้งหมดและเริ่มใหม่หรือไม่?")){
+  localStorage.removeItem("openingChecklist");
+  state=JSON.parse(JSON.stringify(seed));
+  save();goPage(1);
+ }
+}
+load();
+goPage(1);
+updateLanguageButtons();
+updateStaticLanguage();
+
+function exportExcel(){
+ if(typeof XLSX==="undefined"){
+  alert(L("ไม่สามารถโหลดเครื่องมือ Excel ได้ กรุณาเชื่อมต่ออินเทอร์เน็ตแล้วลองใหม่","ບໍ່ສາມາດໂຫຼດ Excel ໄດ້ ກະລຸນາເຊື່ອມຕໍ່ Internet ແລ້ວລອງໃໝ່")); return;
+ }
+ const wb=XLSX.utils.book_new();
+ const summary=[[L("OPENING CHECKLIST — สรุปผลการตรวจ","OPENING CHECKLIST — ສະຫຼຸບຜົນການກວດ")],[],
+  [L("หมวดหมู่","ໝວດໝູ່"),L("รายการทั้งหมด","ລາຍການທັງໝົດ"),L("ผ่าน","ຜ່ານ"),L("แก้ไขแล้ว","ແກ້ໄຂແລ້ວ"),L("รอแก้ไข","ລໍຖ້າແກ້ໄຂ"),L("ความพร้อม","ຄວາມພ້ອມ")]];
+ state.forEach(c=>{
+  const n=c.items.length,p=c.items.filter(x=>x.status==="pass").length,f=c.items.filter(x=>x.status==="fixed").length,q=c.items.filter(x=>x.status==="pending").length;
+  summary.push([catLabel(c),n,p,f,q,(n?Math.round((p+f)/n*100):0)+"%"]);
+ });
+ let s=XLSX.utils.aoa_to_sheet(summary);
+ s["!cols"]=[{wch:38},{wch:16},{wch:12},{wch:14},{wch:14},{wch:14}];
+ s["!pageSetup"]={paperSize:9,orientation:"portrait",fitToWidth:1,fitToHeight:1};
+ XLSX.utils.book_append_sheet(wb,s,"ສະຫຼຸບ");
+ state.forEach(c=>{
+  const rows=[[L("OPENING CHECKLIST — ","OPENING CHECKLIST — ")+catLabel(c)],[],
+   [L("ลำดับ","ລຳດັບ"),L("รายการตรวจสอบ","ລາຍການກວດສອບ"),L("สถานะ","ສະຖານະ"),L("ความคิดเห็น / สิ่งที่ต้องแก้ไข","ຄຳເຫັນ / ສິ່ງທີ່ຕ້ອງແກ້"),L("วันที่ตรวจ","ວັນທີກວດ")]];
+  c.items.forEach((x,i)=>rows.push([i+1,itemLabel(x),
+    x.status==="pass"?L("ผ่าน","ຜ່ານ"):x.status==="fixed"?L("แก้ไขแล้ว","ແກ້ໄຂແລ້ວ"):L("รอแก้ไข","ລໍຖ້າແກ້ໄຂ"),
+    x.note||"",""]));
+  let sh=XLSX.utils.aoa_to_sheet(rows);
+  sh["!cols"]=[{wch:8},{wch:48},{wch:16},{wch:42},{wch:16}];
+  sh["!pageSetup"]={paperSize:9,orientation:"portrait",fitToWidth:1,fitToHeight:0};
+  sh["!freeze"]="A4";
+  const sheetName=catLabel(c).replace(/[\\\/\?\*\[\]:]/g,"-").slice(0,31);
+  XLSX.utils.book_append_sheet(wb,sh,sheetName);
+ });
+ const d=new Date();
+ const fn=`Opening_Checklist_${d.getFullYear()}${String(d.getMonth()+1).padStart(2,"0")}${String(d.getDate()).padStart(2,"0")}.xlsx`;
+ XLSX.writeFile(wb,fn);
+}
+
+</script>
+</body>
+</html>
