@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>Opening Checklist</title>
+<title>Blue Night Bar - Opening Checklist</title>
 <style>
 *{box-sizing:border-box}
 :root{
@@ -365,7 +365,7 @@ input:focus,select:focus{
 <body>
 <header>
  <div class="headrow">
-  <div class="brand">OPENING <span>CHECKLIST</span></div>
+  <div class="brand">BLUE NIGHT <span>BAR</span></div>
   <div class="lang-switch" aria-label="Language">
   <button id="langLO" onclick="setLanguage('lo')" title="ພາສາລາວ">🇱🇦</button>
   <button id="langTH" onclick="setLanguage('th')" title="ภาษาไทย">🇹🇭</button>
@@ -378,6 +378,7 @@ input:focus,select:focus{
   <button id="nav3" onclick="goPage(3)">③ ລໍຖ້າແກ້ໄຂ</button>
  </div>
 </header>
+<div id="onlineStatus" style="margin:10px auto 0;max-width:1100px;padding:8px 12px;border:1px solid #34415F;border-radius:10px;background:#0E1425;color:#AFC0DD;font-size:12px;text-align:center">☁️ Online Database: กำลังตรวจสอบการเชื่อมต่อ...</div>
 
 <main>
 <section id="page1" class="page active">
@@ -482,21 +483,120 @@ function renderCurrentPage(){
 }
 
 
-function save(){localStorage.setItem("openingChecklist",JSON.stringify(state))}
-function load(){
+/* ================= ONLINE DATABASE =================
+   Set these two values after creating a Supabase project.
+   Use the Project URL and the PUBLIC/ANON key only.
+   Never put the service_role key in this file.
+====================================================== */
+const SUPABASE_URL = "https://ylohcrsnzjsjsgvqqadw.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_26At-S3WLbun_PthkrBM7g_FNFCLXKv";
+const ONLINE_ENABLED = !!(SUPABASE_URL && SUPABASE_ANON_KEY);
+const DB_TABLE = "checklist_items";
+let onlineSyncTimer = null;
+let onlineBusy = false;
+
+function dbHeaders(){
+ return {
+   "apikey": SUPABASE_ANON_KEY,
+   "Authorization": "Bearer "+SUPABASE_ANON_KEY,
+   "Content-Type": "application/json",
+   "Prefer": "resolution=merge-duplicates,return=minimal"
+ };
+}
+function itemId(ci,ii){ return `c${ci}_i${ii}`; }
+function flattenState(){
+ const rows=[];
+ state.forEach((c,ci)=>c.items.forEach((x,ii)=>rows.push({
+   id:itemId(ci,ii), category_index:ci, item_index:ii,
+   status:x.status||"pending", note:x.note||"",
+   updated_at:new Date().toISOString()
+ })));
+ return rows;
+}
+async function onlineUpsertItems(items){
+ if(!ONLINE_ENABLED || !items.length) return;
+ try{
+   await fetch(`${SUPABASE_URL}/rest/v1/${DB_TABLE}`,{method:"POST",headers:dbHeaders(),body:JSON.stringify(items)});
+ }catch(e){ console.warn("Online save failed",e); }
+}
+async function saveItemOnline(ci,ii){
+ if(!ONLINE_ENABLED) return;
+ const x=state[ci].items[ii];
+ await onlineUpsertItems([{id:itemId(ci,ii),category_index:ci,item_index:ii,status:x.status||"pending",note:x.note||"",updated_at:new Date().toISOString()}]);
+}
+async function saveAllOnline(){
+ if(!ONLINE_ENABLED) return;
+ await onlineUpsertItems(flattenState());
+}
+function save(){
+ localStorage.setItem("openingChecklist",JSON.stringify(state));
+}
+async function load(){
  const savedVersion=localStorage.getItem("openingChecklistVersion");
  if(savedVersion!==APP_VERSION){
    localStorage.removeItem("openingChecklist");
    localStorage.setItem("openingChecklistVersion",APP_VERSION);
  }
+ let localState=null;
  const raw=localStorage.getItem("openingChecklist");
- if(raw){
-   try{state=JSON.parse(raw)}catch(e){state=null}
+ if(raw){ try{localState=JSON.parse(raw)}catch(e){localState=null} }
+ if(!ONLINE_ENABLED){
+   state=localState || JSON.parse(JSON.stringify(seed));
+   save();
+   return;
  }
- if(!state){
-   state=JSON.parse(JSON.stringify(seed));
+ try{
+   const r=await fetch(`${SUPABASE_URL}/rest/v1/${DB_TABLE}?select=id,category_index,item_index,status,note&order=category_index,item_index`,{headers:dbHeaders()});
+   if(!r.ok) throw new Error("Database request failed: "+r.status);
+   const rows=await r.json();
+   if(rows.length){
+     state=JSON.parse(JSON.stringify(seed));
+     rows.forEach(row=>{
+       if(state[row.category_index] && state[row.category_index].items[row.item_index]){
+         state[row.category_index].items[row.item_index].status=row.status||"pending";
+         state[row.category_index].items[row.item_index].note=row.note||"";
+       }
+     });
+     save();
+   }else{
+     state=localState || JSON.parse(JSON.stringify(seed));
+     save();
+     await saveAllOnline();
+   }
+ }catch(e){
+   console.warn("Online database unavailable; using local copy",e);
+   state=localState || JSON.parse(JSON.stringify(seed));
    save();
  }
+}
+async function syncFromOnline(){
+ if(!ONLINE_ENABLED || onlineBusy) return;
+ try{
+   onlineBusy=true;
+   const r=await fetch(`${SUPABASE_URL}/rest/v1/${DB_TABLE}?select=id,category_index,item_index,status,note&order=category_index,item_index`,{headers:dbHeaders()});
+   if(!r.ok) return;
+   const rows=await r.json();
+   if(!rows.length) return;
+   const next=JSON.parse(JSON.stringify(state));
+   rows.forEach(row=>{
+     if(next[row.category_index] && next[row.category_index].items[row.item_index]){
+       next[row.category_index].items[row.item_index].status=row.status||"pending";
+       next[row.category_index].items[row.item_index].note=row.note||"";
+     }
+   });
+   state=next; save(); renderCurrentPage();
+ }catch(e){} finally{ onlineBusy=false; }
+}
+function updateOnlineStatus(){
+ const el=document.getElementById("onlineStatus"); if(!el) return;
+ if(ONLINE_ENABLED){ el.textContent="☁️ Online Database: เชื่อมต่อฐานข้อมูลกลางแล้ว • ทุกเครื่องใช้ข้อมูลชุดเดียวกัน"; el.style.color="#7BE0B4"; }
+ else { el.textContent="💾 โหมดเครื่องเดียว: ยังไม่ได้เชื่อมต่อ Database กลาง"; el.style.color="#F0BD58"; }
+}
+function startOnlineSync(){
+ updateOnlineStatus();
+ if(!ONLINE_ENABLED) return;
+ clearInterval(onlineSyncTimer);
+ onlineSyncTimer=setInterval(syncFromOnline,4000);
 }
 function totals(){
  let all=0,pass=0,pending=0,fixed=0;
@@ -594,15 +694,17 @@ function renderDetail(){
    </div>`;
  }).join("") || '<div class="empty">ไม่พบรายการ</div>';
 }
-function setStatus(i,status,checked){
+async function setStatus(i,status,checked){
  state[currentCat].items[i].status=checked?status:"pending";
  save();renderDetail();renderDashboard();
+ await saveItemOnline(currentCat,i);
 }
-function saveNote(i){
+async function saveNote(i){
  const v=document.getElementById("note-"+i).value.trim();
  state[currentCat].items[i].note=v;
  if(v && state[currentCat].items[i].status==="pass")state[currentCat].items[i].status="pending";
  save();renderDetail();renderPending();renderDashboard();
+ await saveItemOnline(currentCat,i);
 }
 function renderPending(){
  const groups=state.map((c,ci)=>({
@@ -660,11 +762,12 @@ function closePendingDetail(){
  currentPendingCat=-1;
  renderPending();
 }
-function markFixed(ci,ii){
+async function markFixed(ci,ii){
  state[ci].items[ii].status="fixed";
  save();
  renderDashboard();
  renderCheckHome();
+ await saveItemOnline(ci,ii);
  const remaining=state[ci].items.filter(x=>x.status==="pending").length;
  if(remaining>0){
    openPendingCategory(ci);
@@ -678,7 +781,7 @@ function escapeHtml(s){
 
 const UI={
  th:{
-  "OPENING CHECKLIST":"OPENING CHECKLIST","รีเซ็ต":"รีเซ็ต","① ສະຫຼຸບ":"① ສະຫຼຸບ","② ເຊັກລິສ":"② เช็คลิสต์","③ ລໍຖ້າແກ້ໄຂ":"③ ລໍຖ້າແກ້ໄຂ",
+  "OPENING CHECKLIST":"BLUE NIGHT BAR","รีเซ็ต":"รีเซ็ต","① ສະຫຼຸບ":"① ສະຫຼຸບ","② ເຊັກລິສ":"② เช็คลิสต์","③ ລໍຖ້າແກ້ໄຂ":"③ ລໍຖ້າແກ້ໄຂ",
   "Dashboard สรุปความพร้อม":"แดชบอร์ดสรุปความพร้อม","ภาพรวมก่อนเปิดร้าน • อาหาร • Bar • Live Music • DJ":"ภาพรวมก่อนเปิดร้าน • อาหาร • บาร์ • ดนตรีสด • ดีเจ",
   "กำลังตรวจสอบ":"กำลังตรวจสอบ","ยังไม่พร้อม":"ยังไม่พร้อม","พร้อมเปิด":"พร้อมเปิด","ตรวจครบแล้ว ไม่มีงานรอแก้ไข":"ตรวจครบแล้ว ไม่มีงานรอแก้ไข",
   "ต้องจัดการรายการรอแก้ไขก่อนเปิดร้าน":"ต้องจัดการรายการรอแก้ไขก่อนเปิดร้าน","ผ่าน":"ผ่าน","แก้ไขแล้ว":"แก้ไขแล้ว","รอแก้ไข":"รอแก้ไข","หมวดครบ":"หมวดครบ",
@@ -694,7 +797,7 @@ const UI={
   "หมวด":"หมวด","รายการรอแก้ไข":"รายการรอแก้ไข","ผ่านแล้ว":"ผ่านแล้ว"
  },
  lo:{
-  "OPENING CHECKLIST":"OPENING CHECKLIST","รีเซ็ต":"ຣີເຊັດ","① ສະຫຼຸບ":"① ສະຫຼຸບ","② ເຊັກລິສ":"② ເຊັກລິສ","③ ລໍຖ້າແກ້ໄຂ":"③ ລໍຖ້າແກ້ໄຂ",
+  "OPENING CHECKLIST":"BLUE NIGHT BAR","รีเซ็ต":"ຣີເຊັດ","① ສະຫຼຸບ":"① ສະຫຼຸບ","② ເຊັກລິສ":"② ເຊັກລິສ","③ ລໍຖ້າແກ້ໄຂ":"③ ລໍຖ້າແກ້ໄຂ",
   "Dashboard สรุปความพร้อม":"ແດັຊບອດສະຫຼຸບຄວາມພ້ອມ","ภาพรวมก่อนเปิดร้าน • อาหาร • Bar • Live Music • DJ":"ພາບລວມກ່ອນເປີດຮ້ານ • ອາຫານ • ບາ • ດົນຕີສົດ • DJ",
   "กำลังตรวจสอบ":"ກຳລັງກວດສອບ","ยังไม่พร้อม":"ຍັງບໍ່ພ້ອມ","พร้อมเปิด":"ພ້ອມເປີດ","ตรวจครบแล้ว ไม่มีงานรอแก้ไข":"ກວດຄົບແລ້ວ ບໍ່ມີວຽກລໍຖ້າແກ້ໄຂ",
   "ต้องจัดการรายการรอแก้ไขก่อนเปิดร้าน":"ຕ້ອງແກ້ໄຂລາຍການຄ້າງກ່ອນເປີດຮ້ານ","ผ่าน":"ຜ່ານ","แก้ไขแล้ว":"ແກ້ໄຂແລ້ວ","รอแก้ไข":"ລໍຖ້າແກ້ໄຂ","หมวดครบ":"ໝວດຄົບ",
@@ -743,24 +846,29 @@ Object.assign(UI.th,{
  "ລາຍການລໍຖ້າແກ້ໄຂ ":"รายการรอแก้ไข ","ລາຍການລໍຖ້າແກ້ໄຂ":"รายการรอแก้ไข",
  "ຍັງບໍ່ມີຄຳເຫັນ":"ยังไม่มีความคิดเห็น","ກວດ":"ตรวจ"
 });
-function resetAll(){
+async function resetAll(){
  if(confirm("ต้องการล้างผลการตรวจทั้งหมดและเริ่มใหม่หรือไม่?")){
   localStorage.removeItem("openingChecklist");
   state=JSON.parse(JSON.stringify(seed));
-  save();goPage(1);
+  save();
+  if(ONLINE_ENABLED) await saveAllOnline();
+  goPage(1);
  }
 }
-load();
-goPage(1);
-updateLanguageButtons();
-updateStaticLanguage();
+(async()=>{
+ await load();
+ goPage(1);
+ updateLanguageButtons();
+ updateStaticLanguage();
+ startOnlineSync();
+})();
 
 function exportExcel(){
  if(typeof XLSX==="undefined"){
   alert(L("ไม่สามารถโหลดเครื่องมือ Excel ได้ กรุณาเชื่อมต่ออินเทอร์เน็ตแล้วลองใหม่","ບໍ່ສາມາດໂຫຼດ Excel ໄດ້ ກະລຸນາເຊື່ອມຕໍ່ Internet ແລ້ວລອງໃໝ່")); return;
  }
  const wb=XLSX.utils.book_new();
- const summary=[[L("OPENING CHECKLIST — สรุปผลการตรวจ","OPENING CHECKLIST — ສະຫຼຸບຜົນການກວດ")],[],
+ const summary=[[L("BLUE NIGHT BAR — สรุปผลการตรวจ","BLUE NIGHT BAR — ສະຫຼຸບຜົນການກວດ")],[],
   [L("หมวดหมู่","ໝວດໝູ່"),L("รายการทั้งหมด","ລາຍການທັງໝົດ"),L("ผ่าน","ຜ່ານ"),L("แก้ไขแล้ว","ແກ້ໄຂແລ້ວ"),L("รอแก้ไข","ລໍຖ້າແກ້ໄຂ"),L("ความพร้อม","ຄວາມພ້ອມ")]];
  state.forEach(c=>{
   const n=c.items.length,p=c.items.filter(x=>x.status==="pass").length,f=c.items.filter(x=>x.status==="fixed").length,q=c.items.filter(x=>x.status==="pending").length;
@@ -771,7 +879,7 @@ function exportExcel(){
  s["!pageSetup"]={paperSize:9,orientation:"portrait",fitToWidth:1,fitToHeight:1};
  XLSX.utils.book_append_sheet(wb,s,"ສະຫຼຸບ");
  state.forEach(c=>{
-  const rows=[[L("OPENING CHECKLIST — ","OPENING CHECKLIST — ")+catLabel(c)],[],
+  const rows=[[L("BLUE NIGHT BAR — ","BLUE NIGHT BAR — ")+catLabel(c)],[],
    [L("ลำดับ","ລຳດັບ"),L("รายการตรวจสอบ","ລາຍການກວດສອບ"),L("สถานะ","ສະຖານະ"),L("ความคิดเห็น / สิ่งที่ต้องแก้ไข","ຄຳເຫັນ / ສິ່ງທີ່ຕ້ອງແກ້"),L("วันที่ตรวจ","ວັນທີກວດ")]];
   c.items.forEach((x,i)=>rows.push([i+1,itemLabel(x),
     x.status==="pass"?L("ผ่าน","ຜ່ານ"):x.status==="fixed"?L("แก้ไขแล้ว","ແກ້ໄຂແລ້ວ"):L("รอแก้ไข","ລໍຖ້າແກ້ໄຂ"),
